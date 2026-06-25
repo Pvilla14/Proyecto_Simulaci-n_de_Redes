@@ -3,16 +3,16 @@ from asyncua import Client
 
 async def nodo_tubo_H2():
 
-    url_nodo_salmuera = "opc.tcp://localhost:4841/Electrolisis_Salmuera/server/"
-    cliente = Client(url=url_nodo_salmuera)
+    url_nodo_agua = "opc.tcp://localhost:4841/Electrolisis_Agua/server/"
+    cliente = Client(url=url_nodo_agua)
 
-    #conectar con servidor de salmuera
+    #conectar con servidor de agua
     try:
-        print(f"Conectando al servidor OPC UA en {url_nodo_salmuera} ...")
+        print(f"Conectando al servidor OPC UA en {url_nodo_agua} ...")
         await cliente.connect()
         print("¡Conectado exitosamente!")
 
-        ns_local = await cliente.get_namespace_index("http://electrolisis.salmuera.cl/local")
+        ns_local = await cliente.get_namespace_index("http://electrolisis.agua.cl/local")
 
         #buscar datos en server
         nodo_presion = await cliente.nodes.root.get_child(
@@ -32,7 +32,7 @@ async def nodo_tubo_H2():
             concentracion_actual = obtener_concentracion()
             hay_impurezas = verificar_impurezas()
             
-            #enviar valores al server de salmuera
+            #enviar valores al server de agua
             await nodo_presion.write_value(presion_actual)
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_impurezas.write_value(hay_impurezas)

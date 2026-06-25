@@ -1,7 +1,7 @@
 import asyncio
 from asyncua import Client
 
-async def nodo_tubo_H2():
+async def nodo_tubo_CL2():
 
     url_nodo_salmuera = "opc.tcp://localhost:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
@@ -16,13 +16,13 @@ async def nodo_tubo_H2():
 
         #buscar datos en server
         nodo_presion = await cliente.nodes.root.get_child(
-            ["0:Objects", f"{ns_local}:Tubo_recolector_H2", f"{ns_local}:Presion"]
+            ["0:Objects", f"{ns_local}:Tubo_recolector_CL2", f"{ns_local}:Presion"]
         )
         nodo_concentracion = await cliente.nodes.root.get_child(
-            ["0:Objects", f"{ns_local}:Tubo_recolector_H2", f"{ns_local}:Concentracion"]
+            ["0:Objects", f"{ns_local}:Tubo_recolector_CL2", f"{ns_local}:Concentracion"]
         )
         nodo_impurezas = await cliente.nodes.root.get_child(
-            ["0:Objects", f"{ns_local}:Tubo_recolector_H2", f"{ns_local}:Impurezas"]
+            ["0:Objects", f"{ns_local}:Tubo_recolector_CL2", f"{ns_local}:Impurezas"]
         )
 
         
@@ -37,7 +37,7 @@ async def nodo_tubo_H2():
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_impurezas.write_value(hay_impurezas)
 
-            print(f"Tubo H2 -> Presión: {presion_actual:.2f} | Concentración: {concentracion_actual:.2f} | Impurezas: {hay_impurezas}")
+            print(f"Tubo CL2 -> Presión: {presion_actual:.2f} | Concentración: {concentracion_actual:.2f} | Impurezas: {hay_impurezas}")
              
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
