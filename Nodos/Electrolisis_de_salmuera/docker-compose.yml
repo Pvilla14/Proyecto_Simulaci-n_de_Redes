@@ -1,0 +1,63 @@
+services:
+
+    server:
+        build: 
+            context: ./Server
+        container_name: sever
+        ports:
+            - "4840:4840"
+
+    electrolisis_salmuera:
+        build:
+            context: ./electrolisis_salmuera
+        container_name: e_salmuera
+        ports: 
+            - "4841:4841"
+        depends_on: 
+            server:
+                condition: service_healthy
+
+    deposito_cl2:
+        build:
+            context: ./deposito_cl2
+        container_name: deposito_cl2
+        depends_on:
+            electrolisis_salmuera:
+                condition: service_healthy
+
+    deposito_naoh:
+        build:
+            context: ./deposito_naoh
+        container_name: deposito_naoh
+        depends_on:
+            electrolisis_salmuera:
+                condition: service_healthy
+
+    deposito_h2:
+        build:
+            context: ./deposito_h2
+        container_name: deposito_h2
+        depends_on:
+            electrolisis_salmuera:
+                condition: service_healthy
+
+    tubo_cl2:
+        build:
+            context: ./tubo_cl2
+        container_name: t_cl2
+        depends_on:
+            electrolisis_salmuera:
+                condition: service_healthy
+
+    tubo_h2:
+        build:
+            context: ./tubo_h2
+        container_name: t_h2
+        depends_on:
+            electrolisis_salmuera:
+                condition: service_healthy
+
+
+
+
+
