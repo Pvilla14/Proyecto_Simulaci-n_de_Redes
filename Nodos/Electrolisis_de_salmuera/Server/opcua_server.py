@@ -23,11 +23,13 @@ class ServidorOPC:
         self.datos_tubo_cl2_salmuera = await Server_Salmuera.add_variable(self.namespace, "Datos_Tubo_CL2", "{}")
         self.datos_deposito_h2_salmuera = await Server_Salmuera.add_variable(self.namespace, "Datos_Deposito_H2", "{}")
         self.datos_deposito_cl2_salmuera = await Server_Salmuera.add_variable(self.namespace, "Datos_Deposito_CL2", "{}")
+        self.datos_deposito_naoh_salmuera = await Server_Salmuera.add_variable(self.namespace, "Datos_Deposito_NaOH", "{}")
 
         await self.datos_tubo_h2_salmuera.set_writable()
         await self.datos_tubo_cl2_salmuera.set_writable()
         await self.datos_deposito_h2_salmuera.set_writable()
         await self.datos_deposito_cl2_salmuera.set_writable()
+        await self.datos_deposito_naoh_salmuera.set_writable()
 
         # variables nodo agua
         Server_Agua = await self.server.nodes.objects.add_object(self.namespace, "Server_Agua")
@@ -60,6 +62,7 @@ class ServidorOPC:
         raw_tubo_cl2_salmuera = await self.datos_tubo_cl2_salmuera.read_value()
         raw_deposito_h2_salmuera = await self.datos_deposito_h2_salmuera.read_value()
         raw_deposito_cl2_salmuera = await self.datos_deposito_cl2_salmuera.read_value()
+        raw_deposito_naoh_salmuera = await self.datos_deposito_naoh_salmuera.read_value()
 
         
         # Usamos un diccionario vacío en caso de que json.loads falle por un string mal formado
@@ -75,7 +78,8 @@ class ServidorOPC:
                 "tubo_h2_salmuera": json.loads(raw_tubo_h2_salmuera),
                 "tubo_cl2_salmuera": json.loads(raw_tubo_cl2_salmuera),
                 "deposito_h2_salmuera": json.loads(raw_deposito_h2_salmuera),
-                "deposito_cl2_salmuera": json.loads(raw_deposito_cl2_salmuera)
+                "deposito_cl2_salmuera": json.loads(raw_deposito_cl2_salmuera),
+                "deposito_naoh_salmuera": json.loads(raw_deposito_naoh_salmuera)
             }
 
         except json.JSONDecodeError:

@@ -28,14 +28,14 @@ async def nodo_electrolisis_de_agua():
     var_impurezas_tubo_o2 = await obj_tubo_o2.add_variable(ns_local, "Impurezas", False)
 
         #deposito de H2 y sus variables
-    obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_de_H2")
+    obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
     var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
-    var_concentracion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Concentracion", 0.0)
+    var_concentracion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
 
         #deposito de O2 y sus variables
-    obj_deposito_o2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_de_O2")
+    obj_deposito_o2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_O2")
     var_presion_deposito_o2 = await obj_deposito_o2.add_variable(ns_local, "Presion", 0.0)
-    var_concentracion_deposito_o2 = await obj_deposito_o2.add_variable(ns_local, "Concentracion", 0.0)
+    var_concentracion_deposito_o2 = await obj_deposito_o2.add_variable(ns_local, "Cantidad", 0.0)
 
     #inicialización de variables
         #variables de tubo de h2
