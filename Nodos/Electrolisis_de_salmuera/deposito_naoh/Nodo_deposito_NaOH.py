@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_deposito_NaOH():
