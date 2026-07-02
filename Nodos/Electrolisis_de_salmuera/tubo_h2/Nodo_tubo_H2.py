@@ -27,7 +27,12 @@ async def nodo_tubo_H2():
 
         
         while True:
-            #obtener valores
+            #Obtener valores anteriores para tomar deciciones
+            presion_anterior = await nodo_presion.get_value()
+            concentracion_anterior = await nodo_concentracion.get_value()
+            impurezas_anterior = await nodo_impurezas.get_value()
+            
+            #Obtener valores actuales
             presion_actual = obtener_presion()
             concentracion_actual = obtener_concentracion()
             hay_impurezas = verificar_impurezas()
@@ -46,14 +51,28 @@ async def nodo_tubo_H2():
     finally:
         await cliente.disconnect()
 
-def obtener_presion():
-    return 1.0
+def obtener_presion(presion_anterior, estado):
+    if estado == "DETENER":
+        return 1.0
+    elif estado == "AJUSTAR":
+        return 2
+    else: #NORMAL
+        return 1
 
-def obtener_concentracion():
-    return 1.0
-
-def verificar_impurezas():
-    return True
-
+def obtener_concentracion(concentracion_anterior, estado):
+    if estado == "DETENER":
+        return 1.0
+    elif estado == "AJUSTAR":
+        return 2
+    else: #NORMAL
+        return 1
+def verificar_impurezas(impurezas_anterior, estado):
+    if estado == "DETENER":
+        return False
+    elif estado == "AJUSTAR":
+        return True
+    else: #NORMAL
+        return True
+    
 if __name__ == "__main__":
     asyncio.run(nodo_tubo_H2())

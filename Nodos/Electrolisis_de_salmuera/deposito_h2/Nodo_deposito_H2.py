@@ -24,6 +24,10 @@ async def nodo_deposito_H2():
 
         
         while True:
+             #Obtener valores anteriores para tomar deciciones
+            presion_anterior = await nodo_presion.get_value()
+            concentracion_anterior = await nodo_cantidad_H2.get_value()
+
             #obtener valores
             presion_actual = obtener_presion()
             cantidad_actual_H2 = obtener_cantidad_H2()
@@ -41,11 +45,21 @@ async def nodo_deposito_H2():
     finally:
         await cliente.disconnect()
 
-def obtener_presion():
-    return 1.0
 
+def obtener_presion(presion_anterior, estado):
+    if estado == "DETENER":
+        return 1.0
+    elif estado == "AJUSTAR":
+        return 2
+    else: #NORMAL
+        return 1
 def obtener_cantidad_H2():
-    return 1.0
+    if estado == "DETENER":
+        return 1.0
+    elif estado == "AJUSTAR":
+        return 2
+    else: #NORMAL
+        return 1
 
 if __name__ == "__main__":
     asyncio.run(nodo_deposito_H2())
