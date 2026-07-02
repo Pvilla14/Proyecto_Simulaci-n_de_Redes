@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_tubo_O2():
@@ -26,6 +27,11 @@ async def nodo_tubo_O2():
         )
         
         while True:
+            #obtenemos valores anteriores para tomar decisiones
+            presion_anterior = await nodo_presion.get_value()
+            concentracion_anterior_H2 = await nodo_concentracion_H2.get_value()
+            concentracion_anterior_O2 = await nodo_concentracion_O2.get_value()
+
             #obtener valores
             presion_actual = obtener_presion()
             concentracion_actual_H2 = obtener_concentracion_H2()
@@ -45,11 +51,44 @@ async def nodo_tubo_O2():
     finally:
         await cliente.disconnect()
 
-def obtener_presion():
-    return
+def obtener_presion(presion_anterior, estado):
+    if estado == "DETENER":
+        return 
+    elif estado == "AJUSTAR":
+        return presion_anterior + random.uniform(-0.2, -0.1)
+    else: #NORMAL
+        return presion_anterior + random.uniform(-0.2, 0.3)
+    
+def obtener_concentracion_H2(concentracion_anterior_H2, estado):
+    if estado == "DETENER":
+        return 
+        
+    elif estado == "AJUSTAR":
+        # Hay una pérdida leve de eficiencia o inestabilidad.
+        # Oscila en un rango sub-óptimo (ej. entre 95% y 98%)
+        cambio = random.uniform(-0.5, 0.5)
+        nuevo_valor = concentracion_anterior_H2 + cambio
+        return max(95.0, min(nuevo_valor, 98.0))
+        
+    else: # NORMAL
+        # Operación óptima. Se mantiene muy alta, pegada al 99.9%
+        cambio = random.uniform(-0.05, 0.05)
+        nuevo_valor = concentracion_anterior_H2 + cambio
+        return max(99.0, min(nuevo_valor, 99.9))
 
-def obtener_concentracion_H2():
-    return
-
-def obtener_concentracion_O2():
-    return
+def obtener_concentracion_O2(concentracion_anterior_O2, estado):
+    if estado == "DETENER":
+        return 
+        
+    elif estado == "AJUSTAR":
+        # Hay una pérdida leve de eficiencia o inestabilidad.
+        # Oscila en un rango sub-óptimo (ej. entre 95% y 98%)
+        cambio = random.uniform(-0.5, 0.5)
+        nuevo_valor = concentracion_anterior_O2 + cambio
+        return max(95.0, min(nuevo_valor, 98.0))
+        
+    else: # NORMAL
+        # Operación óptima. Se mantiene muy alta, pegada al 99.9%
+        cambio = random.uniform(-0.05, 0.05)
+        nuevo_valor = concentracion_anterior_O2 + cambio
+        return max(99.0, min(nuevo_valor, 99.9))

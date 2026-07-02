@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_deposito_O2():
@@ -24,6 +25,10 @@ async def nodo_deposito_O2():
 
         
         while True:
+            #obetener valores anteriores para tomar deciciones
+            presion_anterior = await nodo_presion.get_value()
+            cantidad_anterior_O2 = await nodo_cantidad_O2.get_value()
+
             #obtener valores
             presion_actual = obtener_presion()
             cantidad_actual_O2 = obtener_cantidad_O2()
@@ -41,8 +46,19 @@ async def nodo_deposito_O2():
     finally:
         await cliente.disconnect()
 
-def obtener_presion():
-    return
+def obtener_presion(presion_anterior, estado):
+    if estado == "DETENER":
+        return 
+    elif estado == "AJUSTAR":
+        return presion_anterior + random.uniform(-0.2, -0.1)
+    else: #NORMAL
+        return presion_anterior + random.uniform(-0.2, 0.3)
 
-def obtener_cantidad_O2():
-    return
+
+def obtener_cantidad_O2(cantidad_anterior_O2, estado):
+    if estado == "DETENER":
+        return 
+    elif estado == "AJUSTAR":
+        return 
+    else: #NORMAL
+        return 
