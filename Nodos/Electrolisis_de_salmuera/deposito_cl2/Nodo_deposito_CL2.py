@@ -1,9 +1,9 @@
 import asyncio
 from asyncua import Client
 
-async def nodo_deposito_H2():
+async def nodo_deposito_CL2():
 
-    url_nodo_salmuera = "opc.tcp://localhost:4841/Electrolisis_Salmuera/server/"
+    url_nodo_salmuera = "opc.tcp://e_salmuera:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
     #conectar con servidor de salmuera
@@ -16,23 +16,23 @@ async def nodo_deposito_H2():
 
         #buscar datos en server
         nodo_presion = await cliente.nodes.root.get_child(
-            ["0:Objects", f"{ns_local}:Deposito_H2", f"{ns_local}:Presion"]
+            ["0:Objects", f"{ns_local}:Deposito_CL2", f"{ns_local}:Presion"]
         )
-        nodo_cantidad_H2 = await cliente.nodes.root.get_child(
-            ["0:Objects", f"{ns_local}:Deposito_H2", f"{ns_local}:Cantidad de H2"]
+        nodo_cantidad_CL2 = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Deposito_CL2", f"{ns_local}:Cantidad"]
         )
 
         
         while True:
             #obtener valores
             presion_actual = obtener_presion()
-            cantidad_actual_H2 = obtener_cantidad_H2()
+            cantidad_actual_CL2 = obtener_cantidad_CL2()
             
             #enviar valores al server de salmuera
             await nodo_presion.write_value(presion_actual)
-            await nodo_cantidad_H2.write_value(cantidad_actual_H2)
+            await nodo_cantidad_CL2.write_value(cantidad_actual_CL2)
 
-            print(f"Deposito H2 -> Presión: {presion_actual:.2f} | Cantidad de H2: {cantidad_actual_H2:.2f}")
+            print(f"Deposito CL2 -> Presión: {presion_actual:.2f} | Cantidad de CL2: {cantidad_actual_CL2:.2f}")
              
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
@@ -42,9 +42,10 @@ async def nodo_deposito_H2():
         await cliente.disconnect()
 
 def obtener_presion():
-    return
+    return 1.0
 
-def obtener_cantidad_H2():
-    return
+def obtener_cantidad_CL2():
+    return 1.0
 
-
+if __name__ == "__main__":
+    asyncio.run(nodo_deposito_CL2())

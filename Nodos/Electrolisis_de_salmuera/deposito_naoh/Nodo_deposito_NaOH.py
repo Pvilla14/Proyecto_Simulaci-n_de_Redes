@@ -3,7 +3,7 @@ from asyncua import Client
 
 async def nodo_deposito_NaOH():
 
-    url_nodo_salmuera = "opc.tcp://localhost:4841/Electrolisis_Salmuera/server/"
+    url_nodo_salmuera = "opc.tcp://e_salmuera:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
     #conectar con servidor de salmuera
@@ -19,7 +19,7 @@ async def nodo_deposito_NaOH():
             ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Concentracion"]
         )
         nodo_cantidad_NaOH = await cliente.nodes.root.get_child(
-            ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Cantidad de NaOH"]
+            ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Cantidad"]
         )
 
         
@@ -42,9 +42,10 @@ async def nodo_deposito_NaOH():
         await cliente.disconnect()
 
 def obtener_concentracion():
-    return
+    return 1.0
 
 def obtener_cantidad_NaOH():
-    return
+    return 1.0
 
- 
+if __name__ == "__main__":
+    asyncio.run(nodo_deposito_NaOH())

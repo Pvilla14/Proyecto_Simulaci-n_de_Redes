@@ -3,7 +3,7 @@ from asyncua import Client
 
 async def nodo_tubo_H2():
 
-    url_nodo_salmuera = "opc.tcp://localhost:4841/Electrolisis_Salmuera/server/"
+    url_nodo_salmuera = "opc.tcp://e_salmuera:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
     #conectar con servidor de salmuera
@@ -47,10 +47,13 @@ async def nodo_tubo_H2():
         await cliente.disconnect()
 
 def obtener_presion():
-    return
+    return 1.0
 
 def obtener_concentracion():
-    return
+    return 1.0
 
 def verificar_impurezas():
-    return
+    return True
+
+if __name__ == "__main__":
+    asyncio.run(nodo_tubo_H2())

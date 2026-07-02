@@ -14,27 +14,32 @@ async def nodo_electrolisis_de_salmuera():
     ns_local = await servidor_local.register_namespace("http://electrolisis.salmuera.cl/local")
 
 
-    #nodos con sus rfespectivas variables a medir de el tubo de H2
-    obj_tubo_h2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Tubo_H2", "Tubo_recolector_H2")
-    var_presion_tubo_h2 = await obj_tubo_h2.add_variable(f"{ns_local}:Tubo_H2", "Presion", 0.0)
-    var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(f"{ns_local}:Tubo_H2", "Concentracion", 0.0)
-    var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(f"{ns_local}:Tubo_H2", "Impurezas", False)
+    #nodos con sus respectivas variables a medir de el tubo de H2
+    obj_tubo_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_H2")
+    var_presion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Presion", 0.0)
+    var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Concentracion", 0.0)
+    var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Impurezas", False)
     
-    #nodos con sus rfespectivas variables a medir de el tubo de CL2
-    obj_tubo_cl2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Tubo_CL2", "Tubo_recolector_H2")
-    var_presion_tubo_cl2 = await obj_tubo_cl2.add_variable(f"{ns_local}:Tubo_CL", "Presion", 0.0)
-    var_concentracion_tubo_cl2 = await obj_tubo_cl2.add_variable(f"{ns_local}:Tubo_CL2", "Concentracion", 0.0)
-    var_impurezas_tubo_cl2 = await obj_tubo_cl2.add_variable(f"{ns_local}:Tubo_CL2", "Impurezas", False)
+    #nodos con sus respectivas variables a medir de el tubo de CL2
+    obj_tubo_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_CL2")
+    var_presion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Presion", 0.0)
+    var_concentracion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Concentracion", 0.0)
+    var_impurezas_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Impurezas", False)
 
-    #nodos con sus rfespectivas variables a medir de el deposito de H2
-    obj_deposito_h2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Deposito_H2", "Deposito_de_H2")
-    var_presion_deposito_h2 = await obj_deposito_h2.add_variable(f"{ns_local}:Deposito_H2", "Deposito_de_H2", 0.0)
-    var_cantidad_deposito_h2 = await obj_deposito_h2.add_variable(f"{ns_local}:Deposito_H2", "Deposito_de_H2", 0.0)
+    #nodos con sus respectivas variables a medir de el deposito de H2
+    obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
+    var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
+    var_cantidad_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
     
-    #nodos con sus rfespectivas variables a medir de el deposito de CL2
-    obj_deposito_cl2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Deposito_CL2", "Deposito_de_CL2")
-    var_presion_deposito_cl2 = await obj_deposito_h2.add_variable(f"{ns_local}:Deposito_CL2", "Deposito_de_CL2", 0.0)
-    var_cantidad_deposito_cl2 = await obj_deposito_h2.add_variable(f"{ns_local}:Deposito_CL2", "Deposito_de_CL2", 0.0)
+    #nodos con sus respectivas variables a medir de el deposito de CL2
+    obj_deposito_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_CL2")
+    var_presion_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Presion", 0.0)
+    var_cantidad_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Cantidad", 0.0)
+
+    #nodos con sus respectivas variables a medir de el deposito de NaOH
+    obj_deposito_naoh = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_NaOH")
+    var_presion_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Concentracion", 0.0)
+    var_cantidad_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Cantidad", 0.0)
     
 
     #inicialización de variables de tubo de H2
@@ -54,12 +59,16 @@ async def nodo_electrolisis_de_salmuera():
     #inicialización de variables de deposito de CL2
     await var_presion_deposito_cl2.set_writable()
     await var_cantidad_deposito_cl2.set_writable()
+
+    #inicialización de variables de deposito de CL2
+    await var_presion_deposito_naoh.set_writable()
+    await var_cantidad_deposito_naoh.set_writable()
     
     await servidor_local.start()
-    print("Servidor del Proceso Agua escuchando en puerto 4841...")
+    print("Servidor del Proceso Salmuera escuchando en puerto 4841...")
     
     #conexion con servidor central en puerto correspondiente 
-    url_server_central = "opc.tcp://localhost:4840/freeopcua/server/"
+    url_server_central = "opc.tcp://server:4840/freeopcua/server/"
     cliente = Client(url=url_server_central)
 
 
@@ -97,7 +106,7 @@ async def nodo_electrolisis_de_salmuera():
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_tubo_h2 = json.dumps(datos_tubo_h2)
-            print(f"Publicando datos al servidor central: {json_datos_tubo_h2}")
+            print(f"Publicando datos de Tubo H2 al servidor central: {json_datos_tubo_h2}")
             await server_tubo_h2_salmuera.write_value(json_datos_tubo_h2)
 
             datos_tubo_cl2 = {
@@ -107,7 +116,7 @@ async def nodo_electrolisis_de_salmuera():
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_tubo_cl2 = json.dumps(datos_tubo_cl2)
-            print(f"Publicando datos al servidor central: {json_datos_tubo_cl2}")
+            print(f"Publicando datos de Tubo CL2 al servidor central: {json_datos_tubo_cl2}")
             await server_tubo_cl2_salmuera.write_value(json_datos_tubo_cl2)
 
             datos_deposito_h2 = {
@@ -116,7 +125,7 @@ async def nodo_electrolisis_de_salmuera():
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_deposito_h2 = json.dumps(datos_deposito_h2)
-            print(f"Publicando datos al servidor central: {json_datos_deposito_h2}")
+            print(f"Publicando datos de Deposito H2 al servidor central: {json_datos_deposito_h2}")
             await server_deposito_h2_salmuera.write_value(json_datos_deposito_h2)
 
             datos_deposito_cl2 = {
@@ -125,8 +134,17 @@ async def nodo_electrolisis_de_salmuera():
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_deposito_cl2 = json.dumps(datos_deposito_cl2)
-            print(f"Publicando datos al servidor central: {json_datos_deposito_cl2}")
+            print(f"Publicando datos de Deposito CL2 al servidor central: {json_datos_deposito_cl2}")
             await server_deposito_cl2_salmuera.write_value(json_datos_deposito_cl2)
+
+            datos_deposito_naoh = {
+                "presion": await var_presion_deposito_naoh.read_value(),  # leer presión
+                "cantidad": await var_cantidad_deposito_naoh.read_value(),  # leer cantidad
+            }
+            #trasformamos datos a json y los enviamos al servidor central
+            json_datos_deposito_naoh = json.dumps(datos_deposito_naoh)
+            print(f"Publicando datos de NaOH al servidor central: {json_datos_deposito_naoh}")
+            await server_deposito_cl2_salmuera.write_value(json_datos_deposito_naoh)
 
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
