@@ -77,10 +77,18 @@ async def nodo_electrolisis_de_agua():
         # Obtener la variable específica a actualizar para cada nodo        
         server_tubo_h2_agua = await cliente.nodes.root.get_child(
         ["0:Objects", f"{ns_server_central}:Server_Agua", f"{ns_server_central}:Datos_Tubo_H2"]
-)
+        )
+        server_tubo_o2_agua = await cliente.nodes.root.get_child(
+        ["0:Objects", f"{ns_server_central}:Server_Agua", f"{ns_server_central}:Datos_Tubo_O2"]
+        )
+        server_deposito_h2_agua = await cliente.nodes.root.get_child(
+        ["0:Objects", f"{ns_server_central}:Server_Agua", f"{ns_server_central}:Datos_Deposito_H2"]
+        )
+        server_deposito_o2_agua = await cliente.nodes.root.get_child(
+        ["0:Objects", f"{ns_server_central}:Server_Agua", f"{ns_server_central}:Datos_Deposito_O2"]
+        )
 
         # 5. Bucle de publicación 
-        
         while True:
             # Escribir el jason de datos al servidor
 
@@ -93,7 +101,35 @@ async def nodo_electrolisis_de_agua():
             json_datos_tubo_h2 = json.dumps(datos_tubo_h2)
             print(f"Publicando datos al servidor central: {json_datos_tubo_h2}")
             await server_tubo_h2_agua.write_value(json_datos_tubo_h2)
-            
+
+            datos_tubo_o2 = {
+                "presion": await var_presion_tubo_o2.read_value(),  # leer presión
+                "concentracion": await var_concentracion_tubo_o2.read_value(),      # leer concentración
+                "impurezas": await var_impurezas_tubo_o2.read_value()  # leer impurezas
+            }
+            #trasformamos datos a json y los enviamos al servidor central
+            json_datos_tubo_o2 = json.dumps(datos_tubo_o2)
+            print(f"Publicando datos al servidor central: {json_datos_tubo_o2}")
+            await server_tubo_o2_agua.write_value(json_datos_tubo_o2)
+
+            datos_deposito_h2 = {
+                "presion": await var_presion_deposito_h2.read_value(),  # leer presión
+                "cantidad": await var_concentracion_deposito_h2.read_value()  # leer cantidad
+            }
+            #trasformamos datos a json y los enviamos al servidor central
+            json_datos_deposito_h2 = json.dumps(datos_deposito_h2)
+            print(f"Publicando datos al servidor central: {json_datos_deposito_h2}")
+            await server_deposito_h2_agua.write_value(json_datos_deposito_h2)
+
+            datos_deposito_o2 = {
+                "presion": await var_presion_deposito_o2.read_value(),  # leer presión
+                "cantidad": await var_concentracion_deposito_o2.read_value()  # leer cantidad
+            }
+            #trasformamos datos a json y los enviamos al servidor central
+            json_datos_deposito_o2 = json.dumps(datos_deposito_o2)
+            print(f"Publicando datos al servidor central: {json_datos_deposito_o2}")
+            await server_deposito_o2_agua.write_value(json_datos_deposito_o2)
+
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
     except Exception as e:
