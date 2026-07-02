@@ -24,6 +24,9 @@ async def nodo_deposito_NaOH():
 
         
         while True:
+            #Obtener valores anteriores para tomar deciciones
+            concentracion_anterior = await nodo_concentracion.get_value()
+            cantidad_anterior_NaOH = await nodo_cantidad_NaOH.get_value()   
             #obtener valores
             concentracion_actual = obtener_concentracion()
             cantidad_actual_NaOH = obtener_cantidad_NaOH()
@@ -41,10 +44,24 @@ async def nodo_deposito_NaOH():
     finally:
         await cliente.disconnect()
 
-def obtener_concentracion():
-    return 1.0
+def obtener_concentracion(concentracion_anterior, estado):
+    if estado == "DETENER":
+        return 
+        
+    elif estado == "AJUSTAR":
+        # Hay una pérdida leve de eficiencia o inestabilidad.
+        # Oscila en un rango sub-óptimo (ej. entre 95% y 98%)
+        cambio = random.uniform(-0.5, 0.5)
+        nuevo_valor = concentracion_anterior + cambio
+        return max(95.0, min(nuevo_valor, 98.0))
+        
+    else: # NORMAL
+        # Operación óptima. Se mantiene muy alta, pegada al 99.9%
+        cambio = random.uniform(-0.05, 0.05)
+        nuevo_valor = concentracion_anterior + cambio
+        return max(99.0, min(nuevo_valor, 99.9))
 
-def obtener_cantidad_NaOH():
+def obtener_cantidad_NaOH(cantidad_anterior, estado):
     return 1.0
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ async def nodo_tubo_H2():
 
 def obtener_presion(presion_anterior, estado):
     if estado == "DETENER":
-        return 1.0
+        return 
     elif estado == "AJUSTAR":
         return presion_anterior + random.uniform(-0.2, -0.1)
     else: #NORMAL
@@ -62,10 +62,7 @@ def obtener_presion(presion_anterior, estado):
 
 def obtener_concentracion(concentracion_anterior, estado):
     if estado == "DETENER":
-        # El sistema se detiene y se purga con nitrógeno. El H2 cae drásticamente.
-        # Va bajando poco a poco hacia 0% (o un valor residual bajo)
-        nuevo_valor = concentracion_anterior - 5.0
-        return max(0.0, nuevo_valor)
+        return 
         
     elif estado == "AJUSTAR":
         # Hay una pérdida leve de eficiencia o inestabilidad.
@@ -82,11 +79,22 @@ def obtener_concentracion(concentracion_anterior, estado):
 
 def verificar_impurezas(impurezas_anterior, estado):
     if estado == "DETENER":
+        # Tras la parada de emergencia y purga, el peligro cede.
+        # Volvemos a False para limpiar el sistema.
         return False
+        
     elif estado == "AJUSTAR":
+        # Si ya estábamos en AJUSTAR, mantenemos las impurezas en True
+        # para cumplir la condición (Actual: True y Anterior: True) de tu evaluación.
         return True
-    else: #NORMAL
-        return True
+        
+    else: # NORMAL
+        # En condiciones normales, el sistema está limpio (False).
+        # random que un 1% de las veces devuelva True para forzar el fallo.
+        if random.random() < 0.02: # 2% de probabilidad de que aparezca un fallo de la nada
+            return True
+        return False
+
     
 if __name__ == "__main__":
     asyncio.run(nodo_tubo_H2())
