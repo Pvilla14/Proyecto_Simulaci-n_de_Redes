@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_tubo_CL2():
@@ -55,9 +56,9 @@ def obtener_presion(presion_anterior, estado):
     if estado == "DETENER":
         return 1.0
     elif estado == "AJUSTAR":
-        return 2
+        return presion_anterior + random.uniform(-0.2, -0.1)
     else: #NORMAL
-        return 1
+        return presion_anterior + random.uniform(-0.2, 0.3)
 
 def obtener_concentracion(concentracion_anterior, estado):
     if estado == "DETENER":
@@ -66,6 +67,7 @@ def obtener_concentracion(concentracion_anterior, estado):
         return 2
     else: #NORMAL
         return 1
+    
 def verificar_impurezas(impurezas_anterior, estado):
     if estado == "DETENER":
         return False

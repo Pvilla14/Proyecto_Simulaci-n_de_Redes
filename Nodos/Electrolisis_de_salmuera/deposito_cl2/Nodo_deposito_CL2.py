@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_deposito_CL2():
@@ -24,6 +25,10 @@ async def nodo_deposito_CL2():
 
         
         while True:
+                #Obtener valores anteriores para tomar deciciones
+            presion_anterior = await nodo_presion.get_value()
+            cantidad_anterior_CL2 = await nodo_cantidad_CL2.get_value()
+
             #obtener valores
             presion_actual = obtener_presion()
             cantidad_actual_CL2 = obtener_cantidad_CL2()
@@ -41,8 +46,13 @@ async def nodo_deposito_CL2():
     finally:
         await cliente.disconnect()
 
-def obtener_presion():
-    return 1.0
+def obtener_presion(presion_anterior, estado):
+    if estado == "DETENER":
+        return 1.0
+    elif estado == "AJUSTAR":
+        return presion_anterior + random.uniform(-0.2, -0.1)
+    else: #NORMAL
+        return presion_anterior + random.uniform(-0.2, 0.3)
 
 def obtener_cantidad_CL2():
     return 1.0

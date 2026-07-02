@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_deposito_H2():
@@ -26,7 +27,7 @@ async def nodo_deposito_H2():
         while True:
              #Obtener valores anteriores para tomar deciciones
             presion_anterior = await nodo_presion.get_value()
-            concentracion_anterior = await nodo_cantidad_H2.get_value()
+            concentracion_anterior_H2 = await nodo_cantidad_H2.get_value()
 
             #obtener valores
             presion_actual = obtener_presion()
@@ -52,8 +53,8 @@ def obtener_presion(presion_anterior, estado):
     elif estado == "AJUSTAR":
         return 2
     else: #NORMAL
-        return 1
-def obtener_cantidad_H2():
+        return presion_anterior + random.uniform(-0.2, 0.3)
+def obtener_cantidad_H2(cantidad_anterior_H2, estado):
     if estado == "DETENER":
         return 1.0
     elif estado == "AJUSTAR":
