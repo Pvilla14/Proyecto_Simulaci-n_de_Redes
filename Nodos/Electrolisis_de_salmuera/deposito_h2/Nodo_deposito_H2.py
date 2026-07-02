@@ -51,9 +51,10 @@ def obtener_presion(presion_anterior, estado):
     if estado == "DETENER":
         return 1.0
     elif estado == "AJUSTAR":
-        return 2
+        return presion_anterior + random.uniform()(-0.2, -0.1)
     else: #NORMAL
         return presion_anterior + random.uniform(-0.2, 0.3)
+    
 def obtener_cantidad_H2(cantidad_anterior_H2, estado):
     if estado == "DETENER":
         return 1.0
