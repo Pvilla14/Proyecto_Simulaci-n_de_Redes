@@ -63,7 +63,12 @@ def obtener_concentracion(concentracion_anterior, estado):
         return max(99.0, min(nuevo_valor, 99.9))
 
 def obtener_cantidad_NaOH(cantidad_anterior, estado):
-    return 1.0
+    if estado == "DETENER":
+        return 1.0
+    elif estado == "AJUSTAR":
+        return 2
+    else: #NORMAL
+        return 1
 
 if __name__ == "__main__":
     asyncio.run(nodo_deposito_NaOH())
