@@ -65,7 +65,7 @@ async def nodo_electrolisis_de_salmuera():
     await var_cantidad_deposito_naoh.set_writable()
     
     await servidor_local.start()
-    print("Servidor del Proceso Agua escuchando en puerto 4841...")
+    print("Servidor del Proceso Salmuera escuchando en puerto 4841...")
     
     #conexion con servidor central en puerto correspondiente 
     url_server_central = "opc.tcp://server:4840/freeopcua/server/"
