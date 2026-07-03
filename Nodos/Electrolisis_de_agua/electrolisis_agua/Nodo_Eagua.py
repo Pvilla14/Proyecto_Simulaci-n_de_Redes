@@ -16,26 +16,26 @@ async def nodo_electrolisis_de_agua():
 
     #nodos con sus rfespectivas variables a medir
         #tubo de H2 y sus recpectivas variables
-    obj_tubo_h2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Tubo_H2", "Tubo_recolector_H2")
-    var_presion_tubo_h2 = await obj_tubo_h2.add_variable(f"{ns_local}:Tubo_H2", "Presion", 0.0)
-    var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(f"{ns_local}:Tubo_H2", "Concentracion", 0.0)
-    var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(f"{ns_local}:Tubo_H2", "Impurezas", False)
+    obj_tubo_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_H2")
+    var_presion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Presion", 0.0)
+    var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Concentracion", 0.0)
+    var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Impurezas", False)
 
         #tubo de O2 y sus recpectivas variables
-    obj_tubo_o2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Tubo_O2", "Tubo_recolector_O2")
-    var_presion_tubo_o2 = await obj_tubo_o2.add_variable(f"{ns_local}:Tubo_O2", "Presion", 0.0)
-    var_concentracion_tubo_o2 = await obj_tubo_o2.add_variable(f"{ns_local}:Tubo_O2", "Concentracion", 0.0)
-    var_impurezas_tubo_o2 = await obj_tubo_o2.add_variable(f"{ns_local}:Tubo_O2", "Impurezas", False)
+    obj_tubo_o2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_O2")
+    var_presion_tubo_o2 = await obj_tubo_o2.add_variable(ns_local, "Presion", 0.0)
+    var_concentracion_tubo_o2 = await obj_tubo_o2.add_variable(ns_local, "Concentracion", 0.0)
+    var_impurezas_tubo_o2 = await obj_tubo_o2.add_variable(ns_local, "Impurezas", False)
 
         #deposito de H2 y sus variables
-    obj_deposito_h2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Deposito_H2", "Deposito_de_H2")
-    var_presion_deposito_h2 = await obj_deposito_h2.add_variable(f"{ns_local}:Deposito_H2", "Presion", 0.0)
-    var_concentracion_deposito_h2 = await obj_deposito_h2.add_variable(f"{ns_local}:Deposito_H2", "Concentracion", 0.0)
+    obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
+    var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
+    var_concentracion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
 
         #deposito de O2 y sus variables
-    obj_deposito_o2 = await servidor_local.nodes.objects.add_object(f"{ns_local}:Deposito_O2", "Deposito_de_O2")
-    var_presion_deposito_o2 = await obj_deposito_o2.add_variable(f"{ns_local}:Deposito_O2", "Presion", 0.0)
-    var_concentracion_deposito_o2 = await obj_deposito_o2.add_variable(f"{ns_local}:Deposito_O2", "Concentracion", 0.0)
+    obj_deposito_o2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_O2")
+    var_presion_deposito_o2 = await obj_deposito_o2.add_variable(ns_local, "Presion", 0.0)
+    var_concentracion_deposito_o2 = await obj_deposito_o2.add_variable(ns_local, "Cantidad", 0.0)
 
     #inicialización de variables
         #variables de tubo de h2
