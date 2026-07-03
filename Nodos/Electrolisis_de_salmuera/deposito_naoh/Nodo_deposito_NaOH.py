@@ -29,9 +29,9 @@ async def nodo_deposito_NaOH():
             concentracion_anterior = await nodo_concentracion.get_value()
             cantidad_anterior_NaOH = await nodo_cantidad_NaOH.get_value()   
             #obtener valores
-            concentracion_actual = obtener_concentracion()
-            cantidad_actual_NaOH = obtener_cantidad_NaOH()
-            
+            concentracion_actual = obtener_concentracion(concentracion_anterior, estado="NORMAL") #hay que poder sacarlo de un nodo de control 
+            cantidad_actual_NaOH = obtener_cantidad_NaOH(cantidad_anterior_NaOH, estado="NORMAL")
+
             #enviar valores al server de salmuera
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_cantidad_NaOH.write_value(cantidad_actual_NaOH)
@@ -47,7 +47,7 @@ async def nodo_deposito_NaOH():
 
 def obtener_concentracion(concentracion_anterior, estado):
     if estado == "DETENER":
-        return 
+        return None
         
     elif estado == "AJUSTAR":
         # Hay una pérdida leve de eficiencia o inestabilidad.
@@ -62,13 +62,20 @@ def obtener_concentracion(concentracion_anterior, estado):
         nuevo_valor = concentracion_anterior + cambio
         return max(99.0, min(nuevo_valor, 99.9))
 
-def obtener_cantidad_NaOH(cantidad_anterior, estado):
+def obtener_cantidad_NaOH(cantidad_anterior_NaOH, estado):
     if estado == "DETENER":
-        return 1.0
+        return None
     elif estado == "AJUSTAR":
-        return 2
-    else: #NORMAL
-        return 1
+        # Hubo una baja (fuga o pérdida). 
+        # Forzamos una recuperación  (ej. entre 10 y 15 unidades)
+        incremento_recuperacion = random.uniform(10.0, 15.0)
+        return cantidad_anterior_NaOH + incremento_recuperacion
+        
+    else: # NORMAL
+        # Simula el flujo continuo y realista de llenado nominal (ej. entre 2 y 8 unidades)
+        llenado_nominal = random.uniform(2.0, 8.0)
+        return cantidad_anterior_NaOH + llenado_nominal
+
 
 if __name__ == "__main__":
     asyncio.run(nodo_deposito_NaOH())

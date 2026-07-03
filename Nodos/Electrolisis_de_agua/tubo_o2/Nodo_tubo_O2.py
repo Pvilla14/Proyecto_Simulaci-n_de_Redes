@@ -33,10 +33,10 @@ async def nodo_tubo_O2():
             concentracion_anterior_O2 = await nodo_concentracion_O2.get_value()
 
             #obtener valores
-            presion_actual = obtener_presion()
-            concentracion_actual_H2 = obtener_concentracion_H2()
-            concentracion_actual_O2 = obtener_concentracion_O2()
-            
+            presion_actual = obtener_presion(presion_anterior, estado="NORMAL") #hay que poder sacar estado de un nodo de control
+            concentracion_actual_H2 = obtener_concentracion_H2(concentracion_anterior_H2, estado="NORMAL")
+            concentracion_actual_O2 = obtener_concentracion_O2(concentracion_anterior_O2, estado="NORMAL")
+
             #enviar valores al server de agua
             await nodo_presion.write_value(presion_actual)
             await nodo_concentracion_H2.write_value(concentracion_actual_H2)
@@ -53,7 +53,7 @@ async def nodo_tubo_O2():
 
 def obtener_presion(presion_anterior, estado):
     if estado == "DETENER":
-        return 
+        return None
     elif estado == "AJUSTAR":
         return presion_anterior + random.uniform(-0.2, -0.1)
     else: #NORMAL
@@ -61,7 +61,7 @@ def obtener_presion(presion_anterior, estado):
     
 def obtener_concentracion_H2(concentracion_anterior_H2, estado):
     if estado == "DETENER":
-        return 
+        return None
         
     elif estado == "AJUSTAR":
         # Hay una pérdida leve de eficiencia o inestabilidad.
@@ -78,7 +78,7 @@ def obtener_concentracion_H2(concentracion_anterior_H2, estado):
 
 def obtener_concentracion_O2(concentracion_anterior_O2, estado):
     if estado == "DETENER":
-        return 
+        return None
         
     elif estado == "AJUSTAR":
         # Hay una pérdida leve de eficiencia o inestabilidad.

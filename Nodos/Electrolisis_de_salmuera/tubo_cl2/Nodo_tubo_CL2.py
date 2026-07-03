@@ -34,9 +34,9 @@ async def nodo_tubo_CL2():
             impurezas_anterior = await nodo_impurezas.get_value()
 
             #obtener valores
-            presion_actual = obtener_presion()
-            concentracion_actual = obtener_concentracion()
-            hay_impurezas = verificar_impurezas()
+            presion_actual = obtener_presion(presion_anterior, estado="NORMAL") #hay que poder sacarlo de un nodo de control
+            concentracion_actual = obtener_concentracion(concentracion_anterior, estado="NORMAL")
+            hay_impurezas = verificar_impurezas(impurezas_anterior, estado="NORMAL")
             
             #enviar valores al server de salmuera
             await nodo_presion.write_value(presion_actual)
@@ -54,7 +54,7 @@ async def nodo_tubo_CL2():
 
 def obtener_presion(presion_anterior, estado):
     if estado == "DETENER":
-        return 
+        return None
     elif estado == "AJUSTAR":
         return presion_anterior + random.uniform(-0.2, -0.1)
     else: #NORMAL
@@ -62,7 +62,7 @@ def obtener_presion(presion_anterior, estado):
 
 def obtener_concentracion(concentracion_anterior, estado):
     if estado == "DETENER":
-        return 
+        return None
         
     elif estado == "AJUSTAR":
         # Hay una pérdida leve de eficiencia o inestabilidad.
