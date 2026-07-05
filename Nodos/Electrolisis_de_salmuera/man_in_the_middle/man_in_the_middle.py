@@ -2,7 +2,8 @@ import asyncio
 import json
 from asyncua import Client, Server
 
-async def nodo_main_in_the_middle(alter=True):
+
+async def nodo_man_in_the_middle():
     # 1. Definir la dirección de tu servidor
 
     #creador del server local de escucha para los nodos de la electrolisis de salmuera 
@@ -14,6 +15,9 @@ async def nodo_main_in_the_middle(alter=True):
     await servidor_local.init()
     ns_local = await servidor_local.register_namespace("http://electrolisis.salmuera.cl/local")
 
+    #nodo para cambiar el estado de inyección de ruido
+    obj_config = await servidor_local.nodes.objects.add_object(ns_local, "Configuracion")
+    var_alter = await obj_config.add_variable(ns_local, "Alterar", False)
 
     #nodos con sus respectivas variables a medir de el tubo de H2
     obj_tubo_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_H2")
@@ -42,6 +46,8 @@ async def nodo_main_in_the_middle(alter=True):
     var_concentracion_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Concentracion", 0.0)
     var_cantidad_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Cantidad", 0.0)
     
+    #inicializaciín de variable alter
+    await var_alter.set_writable()
 
     #inicialización de variables de tubo de H2
     await var_presion_tubo_h2.set_writable()
@@ -133,6 +139,9 @@ async def nodo_main_in_the_middle(alter=True):
 
         # 5. Bucle de publicación 
         while True:
+
+            alter = await var_alter.read_value()
+
             # Tubo H2
             presion_actual = await var_presion_tubo_h2.read_value()
             concentracion_actual = await var_concentracion_tubo_h2.read_value()
@@ -200,5 +209,6 @@ async def nodo_main_in_the_middle(alter=True):
 def ruido():
     return 1
 
+
 if __name__ == "__main__":
-    asyncio.run(nodo_main_in_the_middle())
+    asyncio.run(nodo_man_in_the_middle())

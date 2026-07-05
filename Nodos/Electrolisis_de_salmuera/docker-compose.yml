@@ -31,6 +31,18 @@ services:
             electrolisis_salmuera_real:
                 condition: service_healthy
 
+    ruido_on:
+        build:
+            context: ./man_in_the_middle/ruido
+        profiles: ["tools"]
+        command: ["true"]
+    
+    ruido_off:
+        build:
+            context: ./man_in_the_middle/ruido
+        profiles: ["tools"]
+        command: ["false"]
+
     deposito_cl2:
         build:
             context: ./deposito_cl2
