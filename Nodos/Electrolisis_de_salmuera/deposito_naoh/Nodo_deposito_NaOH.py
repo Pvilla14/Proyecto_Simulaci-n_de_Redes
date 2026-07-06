@@ -98,5 +98,5 @@ class ProtocoloHandler:
         self.estado_actual = estado_actual
 
     def datachange_notification(self, node, val, data):
-        print(f"Tubo CL2 recibió estado: {val}")
+        print(f"Deposito NaOH recibió estado: {val}")
         self.estado_actual = val
