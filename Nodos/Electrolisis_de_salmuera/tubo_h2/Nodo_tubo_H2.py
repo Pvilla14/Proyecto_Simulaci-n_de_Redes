@@ -1,4 +1,5 @@
 import asyncio
+import random
 from asyncua import Client
 
 async def nodo_tubo_H2():
@@ -24,20 +25,37 @@ async def nodo_tubo_H2():
         nodo_impurezas = await cliente.nodes.root.get_child(
             ["0:Objects", f"{ns_local}:Tubo_recolector_H2", f"{ns_local}:Impurezas"]
         )
+        nodo_estado = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Tubo_recolector_H2", f"{ns_local}:Estado"]
+        )
 
+
+        estado = "NORMAL"
+
+        handler = ProtocoloHandler(estado_actual=estado)
+        sub = await cliente.create_subscription(300, handler)
+        await sub.subscribe_data_change(nodo_estado)
         
         while True:
-            #obtener valores
-            presion_actual = obtener_presion()
-            concentracion_actual = obtener_concentracion()
-            hay_impurezas = verificar_impurezas()
+
+            estado_actual = handler.estado_actual  # Obtener el estado actual desde el manejador
+
+            #Obtener valores anteriores para tomar deciciones
+            presion_anterior = await nodo_presion.get_value()
+            concentracion_anterior = await nodo_concentracion.get_value()
+            impurezas_anterior = await nodo_impurezas.get_value()
+            
+            #Obtener valores actuales
+            presion_actual = obtener_presion(presion_anterior, estado=estado_actual) #hay que poder sacarlo de un nodo de control
+            concentracion_actual = obtener_concentracion(concentracion_anterior, estado=estado_actual)
+            hay_impurezas = verificar_impurezas(impurezas_anterior, estado=estado_actual)
             
             #enviar valores al server de salmuera
             await nodo_presion.write_value(presion_actual)
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_impurezas.write_value(hay_impurezas)
 
-            print(f"Tubo H2 -> Presión: {presion_actual:.2f} | Concentración: {concentracion_actual:.2f} | Impurezas: {hay_impurezas}")
+            print(f"Tubo H2 [{estado_actual}] -> Presión: {presion_actual:.2f} | "f"Concentración: {concentracion_actual:.2f} | Impurezas: {hay_impurezas}")
              
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
@@ -46,14 +64,63 @@ async def nodo_tubo_H2():
     finally:
         await cliente.disconnect()
 
-def obtener_presion():
-    return 1.0
+def obtener_presion(presion_anterior, estado):
+    if estado == "DETENER":
+        objetivo = 2.0
+        paso = random.uniform(0.1, 0.25)
+        if presion_anterior > objetivo:
+            return max(objetivo, presion_anterior - paso)
+        else:
+            return min(objetivo, presion_anterior + paso)
+    elif estado == "AJUSTAR":
+        return presion_anterior + random.uniform(-0.2, -0.1)
+    else:  # NORMAL
+        return presion_anterior + random.uniform(-0.2, 0.3)
 
-def obtener_concentracion():
-    return 1.0
 
-def verificar_impurezas():
-    return True
+def obtener_concentracion(concentracion_anterior, estado):
+    if estado == "DETENER":
+        objetivo = 99.5
+        paso = random.uniform(1.0, 3.0)  # menor que el umbral de "cambio brusco" (5.0 / 10.0)
+        if concentracion_anterior > objetivo:
+            return max(objetivo, concentracion_anterior - paso)
+        else:
+            return min(objetivo, concentracion_anterior + paso)
+    elif estado == "AJUSTAR":
+        cambio = random.uniform(-0.5, 0.5)
+        nuevo_valor = concentracion_anterior + cambio
+        return max(95.0, min(nuevo_valor, 98.0))
+    else:  # NORMAL
+        cambio = random.uniform(-0.05, 0.05)
+        nuevo_valor = concentracion_anterior + cambio
+        return max(99.0, min(nuevo_valor, 99.9))
 
+def verificar_impurezas(impurezas_anterior, estado):
+    if estado == "DETENER":
+        return False
+
+    elif estado == "AJUSTAR":
+        if impurezas_anterior:
+            if random.random() < 0.3:  # 30% de resolverse por ciclo
+                return False
+            return True
+        else:
+            return False
+
+    else:  # NORMAL
+        if random.random() < 0.02:
+            return True
+        return False
+
+    
 if __name__ == "__main__":
     asyncio.run(nodo_tubo_H2())
+
+
+class ProtocoloHandler:
+    def __init__(self, estado_actual):
+        self.estado_actual = estado_actual
+
+    def datachange_notification(self, node, val, data):
+        print(f"Tubo H2 recibió estado: {val}")
+        self.estado_actual = val

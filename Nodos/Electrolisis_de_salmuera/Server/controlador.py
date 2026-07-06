@@ -1,6 +1,6 @@
 import json
 
-class controlador:
+class Controlador:
     def __init__(self):
         # Guardamos el estado del ciclo anterior para comparar
         self.datos_anterior = {}
