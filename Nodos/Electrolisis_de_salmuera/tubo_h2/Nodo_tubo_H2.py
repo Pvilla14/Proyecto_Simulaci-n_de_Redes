@@ -15,6 +15,19 @@ async def nodo_tubo_H2():
     url_nodo_salmuera = "opc.tcp://e_salmuera_falso:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
+# === CONFIGURACIÓN DE SEGURIDAD PARA EL CLIENTE TUBO H2 ===
+    # 1. Inicializar el almacén para generar el certificado único de este componente
+    await cliente.init_certificate_store(
+        cert_path="tubo_h2_cert.pem", 
+        private_key_path="tubo_h2_key.pem"
+    )
+    
+    # 2. Configurar la política de seguridad requerida por el servidor local de salmuera
+    await cliente.set_security_policy(
+        "http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256"
+    )
+    # ==========================================================
+
     #conectar con servidor de salmuera
     try:
         print(f"Conectando al servidor OPC UA en {url_nodo_salmuera} ...")

@@ -15,7 +15,7 @@ async def nodo_deposito_CL2():
     url_nodo_salmuera = "opc.tcp://e_salmuera_falso:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
-    # === CONFIGURACIÓN DE SEGURIDAD PARA EL CLIENTE DEPÓSITO ===
+    # === CONFIGURACIÓN DE SEGURIDAD PARA EL CLIENTE DEPÓSITO CL2 ===
     # Inicializar el almacén para generar el certificado de este cliente específico
     await cliente.init_certificate_store(
         cert_path="deposito_cl2_cert.pem", 
