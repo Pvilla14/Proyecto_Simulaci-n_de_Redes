@@ -111,4 +111,4 @@ class ServidorOPC:
             return {"global": estado}
 
         await self.estado_salmuera.write_value(json.dumps(normalizar(estado_salmuera)))
-        await self.estado_agua.write_value(json.dumps(normalizar(estado_agua)))
+        #await self.estado_agua.write_value(json.dumps(normalizar(estado_agua)))
