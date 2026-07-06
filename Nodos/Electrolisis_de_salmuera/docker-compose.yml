@@ -7,22 +7,48 @@ services:
         ports:
             - "4840:4840"
 
-    electrolisis_salmuera:
+    electrolisis_salmuera_real:
         build:
             context: ./electrolisis_salmuera
-        container_name: e_salmuera
+        container_name: e_salmuera_real
         ports: 
             - "4841:4841"
+        environment:
+            - PYTHONUNBUFFERED=1
         depends_on: 
             server:
                 condition: service_healthy
+
+    electrolisis_salmuera_falso:
+        build:
+            context: ./man_in_the_middle
+        container_name: e_salmuera_falso
+        ports: 
+            - "4842:4841"
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on: 
+            electrolisis_salmuera_real:
+                condition: service_healthy
+
+    ruido_on:
+        build:
+            context: ./man_in_the_middle/ruido
+        profiles: ["tools"]
+        command: ["true"]
+    
+    ruido_off:
+        build:
+            context: ./man_in_the_middle/ruido
+        profiles: ["tools"]
+        command: ["false"]
 
     deposito_cl2:
         build:
             context: ./deposito_cl2
         container_name: deposito_cl2
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     deposito_naoh:
@@ -30,7 +56,7 @@ services:
             context: ./deposito_naoh
         container_name: deposito_naoh
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     deposito_h2:
@@ -38,7 +64,7 @@ services:
             context: ./deposito_h2
         container_name: deposito_h2
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     tubo_cl2:
@@ -46,7 +72,7 @@ services:
             context: ./tubo_cl2
         container_name: t_cl2
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     tubo_h2:
@@ -54,7 +80,7 @@ services:
             context: ./tubo_h2
         container_name: t_h2
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
 

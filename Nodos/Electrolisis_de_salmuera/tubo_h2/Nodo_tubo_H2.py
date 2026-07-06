@@ -2,9 +2,17 @@ import asyncio
 import random
 from asyncua import Client
 
+class ProtocoloHandler:
+    def __init__(self, estado_actual):
+        self.estado_actual = estado_actual
+
+    def datachange_notification(self, node, val, data):
+        print(f"Tubo H2 recibió estado: {val}")
+        self.estado_actual = val
+
 async def nodo_tubo_H2():
 
-    url_nodo_salmuera = "opc.tcp://e_salmuera:4841/Electrolisis_Salmuera/server/"
+    url_nodo_salmuera = "opc.tcp://e_salmuera_falso:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
     #conectar con servidor de salmuera
@@ -117,10 +125,3 @@ if __name__ == "__main__":
     asyncio.run(nodo_tubo_H2())
 
 
-class ProtocoloHandler:
-    def __init__(self, estado_actual):
-        self.estado_actual = estado_actual
-
-    def datachange_notification(self, node, val, data):
-        print(f"Tubo H2 recibió estado: {val}")
-        self.estado_actual = val
