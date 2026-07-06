@@ -97,3 +97,12 @@ def obtener_cantidad_NaOH(cantidad_anterior_NaOH, estado):
 
 if __name__ == "__main__":
     asyncio.run(nodo_deposito_NaOH())
+
+
+class ProtocoloHandler:
+    def __init__(self, estado_actual):
+        self.estado_actual = estado_actual
+
+    def datachange_notification(self, node, val, data):
+        print(f"Deposito NaOH recibió estado: {val}")
+        self.estado_actual = val

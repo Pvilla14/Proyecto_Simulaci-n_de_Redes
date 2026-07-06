@@ -94,3 +94,12 @@ def obtener_cantidad_H2(cantidad_anterior_H2, estado):
 
 if __name__ == "__main__":
     asyncio.run(nodo_deposito_H2())
+
+
+class ProtocoloHandler:
+    def __init__(self, estado_actual):
+        self.estado_actual = estado_actual
+
+    def datachange_notification(self, node, val, data):
+        print(f"Deposito H2 recibió estado: {val}")
+        self.estado_actual = val
