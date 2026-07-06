@@ -13,56 +13,67 @@ async def nodo_electrolisis_de_salmuera():
     await servidor_local.init()
     ns_local = await servidor_local.register_namespace("http://electrolisis.salmuera.cl/local")
 
+    
 
     #nodos con sus respectivas variables a medir de el tubo de H2
     obj_tubo_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_H2")
     var_presion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Presion", 0.0)
     var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Impurezas", False)
+    var_estado_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Estado", "NORMAL")
+
     
     #nodos con sus respectivas variables a medir de el tubo de CL2
     obj_tubo_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_CL2")
     var_presion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Presion", 0.0)
     var_concentracion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Impurezas", False)
+    var_estado_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Estado", "NORMAL")
 
     #nodos con sus respectivas variables a medir de el deposito de H2
     obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
     var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
+    var_estado_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Estado", "NORMAL")
     
     #nodos con sus respectivas variables a medir de el deposito de CL2
     obj_deposito_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_CL2")
     var_presion_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Cantidad", 0.0)
+    var_estado_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Estado", "NORMAL")
 
     #nodos con sus respectivas variables a medir de el deposito de NaOH
     obj_deposito_naoh = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_NaOH")
     var_presion_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Concentracion", 0.0)
     var_cantidad_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Cantidad", 0.0)
-    
+    var_estado_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Estado", "NORMAL")    
 
     #inicialización de variables de tubo de H2
     await var_presion_tubo_h2.set_writable()
     await var_concentracion_tubo_h2.set_writable()
     await var_impurezas_tubo_h2.set_writable()
+    await var_estado_tubo_h2.set_writable()
 
     #inicialización de variables de tubo de CL2
     await var_presion_tubo_cl2.set_writable()
     await var_concentracion_tubo_cl2.set_writable()
     await var_impurezas_tubo_cl2.set_writable()
+    await var_estado_tubo_cl2.set_writable()
 
     #inicialización de variables de deposito de H2
     await var_presion_deposito_h2.set_writable()
     await var_cantidad_deposito_h2.set_writable()
+    await var_estado_deposito_h2.set_writable()
 
     #inicialización de variables de deposito de CL2
     await var_presion_deposito_cl2.set_writable()
     await var_cantidad_deposito_cl2.set_writable()
+    await var_estado_deposito_cl2.set_writable()
 
     #inicialización de variables de deposito de CL2
     await var_presion_deposito_naoh.set_writable()
     await var_cantidad_deposito_naoh.set_writable()
+    await var_estado_deposito_naoh.set_writable()
     
     await servidor_local.start()
     print("Servidor del Proceso Salmuera escuchando en puerto 4841...")
@@ -94,6 +105,24 @@ async def nodo_electrolisis_de_salmuera():
         server_deposito_cl2_salmuera = await cliente.nodes.root.get_child(
         ["0:Objects", f"{ns_server_central}:Server_Salmuera", f"{ns_server_central}:Datos_Deposito_CL2"]
 )       
+        server_deposito_naoh_salmuera = await cliente.nodes.root.get_child(
+        ["0:Objects", f"{ns_server_central}:Server_Salmuera", f"{ns_server_central}:Datos_Deposito_NaOH"]
+)
+        server_estado_salmuera = await cliente.nodes.root.get_child(
+        ["0:Objects", f"{ns_server_central}:Server_Salmuera", f"{ns_server_central}:Estado_Salmuera"]
+)
+        
+        mapa_variables_locales = {
+            "tubo_h2_salmuera": var_estado_tubo_h2,
+            "tubo_cl2_salmuera": var_estado_tubo_cl2,
+            "deposito_h2_salmuera": var_estado_deposito_h2,
+            "deposito_cl2_salmuera": var_estado_deposito_cl2,
+            "deposito_naoh_salmuera": var_estado_deposito_naoh,
+        }
+        handler = EstadoHandler(mapa_variables_locales)
+        sub = await cliente.create_subscription(300, handler)
+        await sub.subscribe_data_change(server_estado_salmuera)
+
 
         # 5. Bucle de publicación 
         while True:
@@ -144,7 +173,7 @@ async def nodo_electrolisis_de_salmuera():
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_deposito_naoh = json.dumps(datos_deposito_naoh)
             print(f"Publicando datos de NaOH al servidor central: {json_datos_deposito_naoh}")
-            await server_deposito_cl2_salmuera.write_value(json_datos_deposito_naoh)
+            await server_deposito_naoh_salmuera.write_value(json_datos_deposito_naoh)
 
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
@@ -157,3 +186,31 @@ async def nodo_electrolisis_de_salmuera():
 
 if __name__ == "__main__":
     asyncio.run(nodo_electrolisis_de_salmuera())
+
+
+class EstadoHandler:
+    """Recibe el JSON grande de estado desde el central y lo reparte
+    a las variables locales de cada tubo/depósito."""
+
+    def __init__(self, mapa_variables_locales):
+        # nombre del sub-proceso (igual a las keys que usa el controlador) -> variable OPC UA local
+        self.mapa = mapa_variables_locales
+
+    def datachange_notification(self, node, val, data):
+        try:
+            estados = json.loads(val)
+        except json.JSONDecodeError:
+            print(f"Estado inválido recibido: {val}")
+            return
+
+        if "global" in estados:
+            # primer ciclo del controlador: mismo estado para todos
+            valor_global = estados["global"]
+            for var_local in self.mapa.values():
+                asyncio.create_task(var_local.write_value(valor_global))
+            return
+
+        for nombre, var_local in self.mapa.items():
+            if nombre in estados:
+                print(f"Reenviando estado de {nombre}: {estados[nombre]}")
+                asyncio.create_task(var_local.write_value(estados[nombre]))

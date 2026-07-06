@@ -44,6 +44,12 @@ class ServidorOPC:
         await self.datos_tubo_o2_agua.set_writable()
         await self.datos_deposito_h2_agua.set_writable()
         await self.datos_deposito_o2_agua.set_writable()
+
+        self.estado_salmuera = await Server_Salmuera.add_variable(self.namespace, "Estado_Salmuera", "{}")
+        await self.estado_salmuera.set_writable()
+
+        self.estado_agua = await Server_Agua.add_variable(self.namespace, "Estado_Agua", "{}")
+        await self.estado_agua.set_writable()
         
         await self.server.start()
         print(f"Servidor OPC UA iniciado en {self.server.endpoint}")
@@ -96,3 +102,13 @@ class ServidorOPC:
         reporte_final_json = json.dumps(reporte_final, indent=4)
 
         return reporte_final_json, reporte_final
+    
+    async def publicar_estados(self, estado_agua, estado_salmuera):
+        def normalizar(estado):
+            # primer ciclo: viene "NORMAL" (str). Ciclos siguientes: dict con un estado por sub-nodo.
+            if isinstance(estado, dict):
+                return estado
+            return {"global": estado}
+
+        await self.estado_salmuera.write_value(json.dumps(normalizar(estado_salmuera)))
+        await self.estado_agua.write_value(json.dumps(normalizar(estado_agua)))
