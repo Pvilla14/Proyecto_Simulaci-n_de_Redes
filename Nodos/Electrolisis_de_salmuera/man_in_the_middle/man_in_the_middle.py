@@ -1,5 +1,5 @@
 import asyncio
-import json
+import random
 from asyncua import Client, Server
 
 
@@ -24,27 +24,32 @@ async def nodo_man_in_the_middle():
     var_presion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Presion", 0.0)
     var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Impurezas", False)
+    var_estado_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Estado", "NORMAL")
     
     #nodos con sus respectivas variables a medir de el tubo de CL2
     obj_tubo_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_CL2")
     var_presion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Presion", 0.0)
     var_concentracion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Impurezas", False)
+    var_estado_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Estado", "NORMAL")
 
     #nodos con sus respectivas variables a medir de el deposito de H2
     obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
     var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
+    var_estado_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Estado", "NORMAL")
     
     #nodos con sus respectivas variables a medir de el deposito de CL2
     obj_deposito_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_CL2")
     var_presion_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Cantidad", 0.0)
+    var_estado_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Estado", "NORMAL")
 
     #nodos con sus respectivas variables a medir de el deposito de NaOH
     obj_deposito_naoh = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_NaOH")
     var_concentracion_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Concentracion", 0.0)
     var_cantidad_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Cantidad", 0.0)
+    var_estado_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Estado", "NORMAL") 
     
     #inicializaciín de variable alter
     await var_alter.set_writable()
@@ -53,26 +58,31 @@ async def nodo_man_in_the_middle():
     await var_presion_tubo_h2.set_writable()
     await var_concentracion_tubo_h2.set_writable()
     await var_impurezas_tubo_h2.set_writable()
+    await var_estado_tubo_h2.set_writable()
 
     #inicialización de variables de tubo de CL2
     await var_presion_tubo_cl2.set_writable()
     await var_concentracion_tubo_cl2.set_writable()
     await var_impurezas_tubo_cl2.set_writable()
+    await var_estado_tubo_cl2.set_writable()
 
     #inicialización de variables de deposito de H2
     await var_presion_deposito_h2.set_writable()
     await var_cantidad_deposito_h2.set_writable()
+    await var_estado_deposito_h2.set_writable()
 
     #inicialización de variables de deposito de CL2
     await var_presion_deposito_cl2.set_writable()
     await var_cantidad_deposito_cl2.set_writable()
+    await var_estado_deposito_cl2.set_writable()
 
-    #inicialización de variables de deposito de CL2
+    #inicialización de variables de deposito de naoh
     await var_concentracion_deposito_naoh.set_writable()
     await var_cantidad_deposito_naoh.set_writable()
+    await var_estado_deposito_naoh.set_writable()
     
     await servidor_local.start()
-    print("Servidor del Proceso Agua escuchando en puerto 4841...")
+    print("Servidor del Proceso Salmuera escuchando en puerto 4841...")
     
     #conexion con servidor central en puerto correspondiente 
     url_nodo_salmuera = "opc.tcp://e_salmuera_real:4841/Electrolisis_Salmuera/server/"
@@ -150,9 +160,9 @@ async def nodo_man_in_the_middle():
             if alter:
                 print(f"Inyectando ruido en tubo H2. Valores originales: presión = {presion_actual}, concentración = {concentracion_actual}, impureza = {impurezas_actual}")
 
-            await nodo_t_presion_H2.write_value(presion_actual + alter * ruido())
-            await nodo_t_concentracion_H2.write_value(concentracion_actual + alter * ruido())
-            await nodo_t_impurezas_H2.write_value(bool(impurezas_actual + alter * ruido()))
+            await nodo_t_presion_H2.write_value(presion_actual * (1 + alter * ruido()))
+            await nodo_t_concentracion_H2.write_value(concentracion_actual * (1 + alter * ruido()))
+            await nodo_t_impurezas_H2.write_value(bool(impurezas_actual * (1 + alter * ruido())))
             
             # Tubo Cl2
             presion_actual = await var_presion_tubo_cl2.read_value()
@@ -162,9 +172,9 @@ async def nodo_man_in_the_middle():
             if alter:
                 print(f"Inyectando ruido en tubo Cl2. Valores originales: presión = {presion_actual}, concentración = {concentracion_actual}, impureza = {impurezas_actual}")
 
-            await nodo_t_presion_Cl2.write_value(presion_actual + alter * ruido())
-            await nodo_t_concentracion_Cl2.write_value(concentracion_actual + alter * ruido())
-            await nodo_t_impurezas_Cl2.write_value(bool(impurezas_actual + alter * ruido()))
+            await nodo_t_presion_Cl2.write_value(presion_actual * (1 + alter * ruido()))
+            await nodo_t_concentracion_Cl2.write_value(concentracion_actual * (1 + alter * ruido()))
+            await nodo_t_impurezas_Cl2.write_value(bool(impurezas_actual * (1 + alter * ruido())))
 
             # Deposito H2
             presion_actual = await var_presion_deposito_h2.read_value()  # leer presión
@@ -173,8 +183,8 @@ async def nodo_man_in_the_middle():
             if alter:
                 print(f"Inyectando ruido en deposito H2. Valores originales: presión = {presion_actual}, cantidad = {cantidad_actual}")
 
-            await nodo_d_presion_H2.write_value(presion_actual + alter * ruido())
-            await nodo_d_cantidad_H2.write_value(cantidad_actual + alter * ruido())
+            await nodo_d_presion_H2.write_value(presion_actual * (1 + alter * ruido()))
+            await nodo_d_cantidad_H2.write_value(cantidad_actual * (1 + alter * ruido()))
 
             # Deposito Cl2
             presion_actual = await var_presion_deposito_cl2.read_value()  # leer presión
@@ -183,8 +193,8 @@ async def nodo_man_in_the_middle():
             if alter:
                 print(f"Inyectando ruido en deposito Cl2. Valores originales: presión = {presion_actual}, cantidad = {cantidad_actual}")
 
-            await nodo_d_presion_Cl2.write_value(presion_actual + alter * ruido())
-            await nodo_d_cantidad_Cl2.write_value(cantidad_actual + alter * ruido())
+            await nodo_d_presion_Cl2.write_value(presion_actual * (1 + alter * ruido()))
+            await nodo_d_cantidad_Cl2.write_value(cantidad_actual * (1 + alter * ruido()))
 
             # Deposito NaOH
             concentracion_actual = await var_concentracion_deposito_naoh.read_value()  # leer presión
@@ -193,8 +203,8 @@ async def nodo_man_in_the_middle():
             if alter:
                 print(f"Inyectando ruido en deposito NaOH. Valores originales: concentración = {concentracion_actual}, cantidad = {cantidad_actual}")
 
-            await nodo_d_concentracion_NaOH.write_value(concentracion_actual + alter * ruido())
-            await nodo_d_cantidad_NaOH.write_value(cantidad_actual + alter * ruido())
+            await nodo_d_concentracion_NaOH.write_value(concentracion_actual * (1 + alter * ruido()))
+            await nodo_d_cantidad_NaOH.write_value(cantidad_actual * (1 + alter * ruido()))
 
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 
@@ -207,7 +217,7 @@ async def nodo_man_in_the_middle():
         await servidor_local.stop()
 
 def ruido():
-    return 1
+    return random.randrange(0,100)
 
 
 if __name__ == "__main__":

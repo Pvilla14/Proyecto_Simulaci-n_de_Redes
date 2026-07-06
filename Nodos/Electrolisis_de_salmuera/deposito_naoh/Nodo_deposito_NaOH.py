@@ -2,7 +2,13 @@ import asyncio
 import random
 from asyncua import Client
 
-from Nodos.Electrolisis_de_salmuera.tubo_h2.Nodo_tubo_H2 import ProtocoloHandler
+class ProtocoloHandler:
+    def __init__(self, estado_actual):
+        self.estado_actual = estado_actual
+
+    def datachange_notification(self, node, val, data):
+        print(f"Tubo CL2 recibió estado: {val}")
+        self.estado_actual = val
 
 async def nodo_deposito_NaOH():
 
@@ -91,12 +97,3 @@ def obtener_cantidad_NaOH(cantidad_anterior_NaOH, estado):
 
 if __name__ == "__main__":
     asyncio.run(nodo_deposito_NaOH())
-
-
-class ProtocoloHandler:
-    def __init__(self, estado_actual):
-        self.estado_actual = estado_actual
-
-    def datachange_notification(self, node, val, data):
-        print(f"Tubo CL2 recibió estado: {val}")
-        self.estado_actual = val
