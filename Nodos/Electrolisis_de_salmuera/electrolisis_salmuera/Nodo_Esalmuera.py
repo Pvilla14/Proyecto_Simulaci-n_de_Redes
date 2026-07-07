@@ -174,7 +174,7 @@ async def nodo_electrolisis_de_salmuera():
             firma = await var_firma_tubo_h2.read_value()
             firma_ok = verificar(firma, [presion, concentracion, impurezas])
             if firma and not firma_ok:
-                print("⚠️  MANIPULADO: la firma del Tubo H2 no cuadra, datos alterados en transito")
+                print("MANIPULADO: la firma del Tubo H2 no cuadra, datos alterados en transito")
             datos_tubo_h2 = {
                 "presion": presion,  # leer presión
                 "concentracion": concentracion,  # leer concentración
@@ -192,7 +192,7 @@ async def nodo_electrolisis_de_salmuera():
             firma = await var_firma_tubo_cl2.read_value()
             firma_ok = verificar(firma, [presion, concentracion, impurezas])
             if firma and not firma_ok:
-                print("⚠️  MANIPULADO: la firma del Tubo CL2 no cuadra, datos alterados en transito")
+                print("MANIPULADO: la firma del Tubo CL2 no cuadra, datos alterados en transito")
             datos_tubo_cl2 = {
                 "presion": presion,  # leer presión
                 "concentracion": concentracion,  # leer concentración
@@ -209,7 +209,7 @@ async def nodo_electrolisis_de_salmuera():
             firma = await var_firma_deposito_h2.read_value()
             firma_ok = verificar(firma, [presion, cantidad])
             if firma and not firma_ok:
-                print("⚠️  MANIPULADO: la firma del Deposito H2 no cuadra, datos alterados en transito")
+                print("MANIPULADO: la firma del Deposito H2 no cuadra, datos alterados en transito")
             datos_deposito_h2 = {
                 "presion": presion,  # leer presión
                 "cantidad": cantidad,  # leer cantidad
@@ -225,7 +225,7 @@ async def nodo_electrolisis_de_salmuera():
             firma = await var_firma_deposito_cl2.read_value()
             firma_ok = verificar(firma, [presion, cantidad])
             if firma and not firma_ok:
-                print("⚠️  MANIPULADO: la firma del Deposito CL2 no cuadra, datos alterados en transito")
+                print("MANIPULADO: la firma del Deposito CL2 no cuadra, datos alterados en transito")
             datos_deposito_cl2 = {
                 "presion": presion,  # leer presión
                 "cantidad": cantidad,  # leer cantidad
@@ -241,7 +241,7 @@ async def nodo_electrolisis_de_salmuera():
             firma = await var_firma_deposito_naoh.read_value()
             firma_ok = verificar(firma, [concentracion, cantidad])
             if firma and not firma_ok:
-                print("⚠️  MANIPULADO: la firma del Deposito NaOH no cuadra, datos alterados en transito")
+                print("MANIPULADO: la firma del Deposito NaOH no cuadra, datos alterados en transito")
             datos_deposito_naoh = {
                 "presion": concentracion,  # leer presión
                 "cantidad": cantidad,  # leer cantidad
