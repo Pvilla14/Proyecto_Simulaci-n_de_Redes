@@ -1,6 +1,7 @@
 import asyncio
 import random
 from asyncua import Client
+from firma import firmar
 
 class ProtocoloHandler:
     def __init__(self, estado_actual):
@@ -36,6 +37,9 @@ async def nodo_tubo_CL2():
         nodo_estado = await cliente.nodes.root.get_child(
             ["0:Objects", f"{ns_local}:Tubo_recolector_CL2", f"{ns_local}:Estado"]
         )
+        nodo_firma = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Tubo_recolector_CL2", f"{ns_local}:Firma"]
+        )
 
         estado = "NORMAL"
         handler = ProtocoloHandler(estado_actual=estado)
@@ -61,6 +65,9 @@ async def nodo_tubo_CL2():
             await nodo_presion.write_value(presion_actual)
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_impurezas.write_value(hay_impurezas)
+
+            #firmar los valores enviados para que la salmuera detecte manipulacion
+            await nodo_firma.write_value(firmar([presion_actual, concentracion_actual, hay_impurezas]))
 
             print(f"Tubo CL2 [{estado_actual}] -> Presión: {presion_actual:.2f} | "f"Concentración: {concentracion_actual:.2f} | Impurezas: {hay_impurezas}")
              

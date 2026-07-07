@@ -1,3 +1,7 @@
+# Clave secreta compartida para la firma HMAC (integridad anti-MITM).
+# Debe ser identica en todos los sensores y en la salmuera. El MITM NO la tiene.
+x-firma-key: &firma_key "cambia-esta-clave-por-una-secreta-y-larga-2024"
+
 services:
 
     server:
@@ -14,8 +18,9 @@ services:
         ports: 
             - "4841:4841"
         environment:
-            - PYTHONUNBUFFERED=1
-        depends_on: 
+            PYTHONUNBUFFERED: "1"
+            FIRMA_KEY: *firma_key
+        depends_on:
             server:
                 condition: service_healthy
 
@@ -47,6 +52,8 @@ services:
         build:
             context: ./deposito_cl2
         container_name: deposito_cl2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
             electrolisis_salmuera_falso:
                 condition: service_healthy
@@ -55,6 +62,8 @@ services:
         build:
             context: ./deposito_naoh
         container_name: deposito_naoh
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
             electrolisis_salmuera_falso:
                 condition: service_healthy
@@ -63,6 +72,8 @@ services:
         build:
             context: ./deposito_h2
         container_name: deposito_h2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
             electrolisis_salmuera_falso:
                 condition: service_healthy
@@ -71,6 +82,8 @@ services:
         build:
             context: ./tubo_cl2
         container_name: t_cl2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
             electrolisis_salmuera_falso:
                 condition: service_healthy
@@ -79,6 +92,8 @@ services:
         build:
             context: ./tubo_h2
         container_name: t_h2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
             electrolisis_salmuera_falso:
                 condition: service_healthy

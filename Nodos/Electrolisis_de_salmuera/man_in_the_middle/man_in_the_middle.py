@@ -25,32 +25,37 @@ async def nodo_man_in_the_middle():
     var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Impurezas", False)
     var_estado_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Estado", "NORMAL")
-    
+    var_firma_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Firma", "")
+
     #nodos con sus respectivas variables a medir de el tubo de CL2
     obj_tubo_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_CL2")
     var_presion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Presion", 0.0)
     var_concentracion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Impurezas", False)
     var_estado_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Firma", "")
 
     #nodos con sus respectivas variables a medir de el deposito de H2
     obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
     var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
     var_estado_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Estado", "NORMAL")
-    
+    var_firma_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Firma", "")
+
     #nodos con sus respectivas variables a medir de el deposito de CL2
     obj_deposito_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_CL2")
     var_presion_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Cantidad", 0.0)
     var_estado_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Firma", "")
 
     #nodos con sus respectivas variables a medir de el deposito de NaOH
     obj_deposito_naoh = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_NaOH")
     var_concentracion_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Concentracion", 0.0)
     var_cantidad_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Cantidad", 0.0)
-    var_estado_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Estado", "NORMAL") 
-    
+    var_estado_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Firma", "")
+
     #inicializaciín de variable alter
     await var_alter.set_writable()
 
@@ -80,7 +85,14 @@ async def nodo_man_in_the_middle():
     await var_concentracion_deposito_naoh.set_writable()
     await var_cantidad_deposito_naoh.set_writable()
     await var_estado_deposito_naoh.set_writable()
-    
+
+    #las firmas tambien deben ser escribibles para que los sensores las publiquen
+    await var_firma_tubo_h2.set_writable()
+    await var_firma_tubo_cl2.set_writable()
+    await var_firma_deposito_h2.set_writable()
+    await var_firma_deposito_cl2.set_writable()
+    await var_firma_deposito_naoh.set_writable()
+
     await servidor_local.start()
     print("Servidor del Proceso Salmuera escuchando en puerto 4841...")
     
@@ -147,7 +159,24 @@ async def nodo_man_in_the_middle():
             ["0:Objects", f"{ns_server_salmuera}:Deposito_NaOH", f"{ns_server_salmuera}:Cantidad"]
         )
 
-        # 5. Bucle de publicación 
+        # Firmas (se reenvian tal cual: el atacante no conoce la clave para regenerarlas)
+        nodo_firma_tubo_H2 = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_server_salmuera}:Tubo_recolector_H2", f"{ns_server_salmuera}:Firma"]
+        )
+        nodo_firma_tubo_Cl2 = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_server_salmuera}:Tubo_recolector_CL2", f"{ns_server_salmuera}:Firma"]
+        )
+        nodo_firma_deposito_H2 = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_server_salmuera}:Deposito_H2", f"{ns_server_salmuera}:Firma"]
+        )
+        nodo_firma_deposito_Cl2 = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_server_salmuera}:Deposito_CL2", f"{ns_server_salmuera}:Firma"]
+        )
+        nodo_firma_deposito_NaOH = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_server_salmuera}:Deposito_NaOH", f"{ns_server_salmuera}:Firma"]
+        )
+
+        # 5. Bucle de publicación
         while True:
 
             alter = await var_alter.read_value()
@@ -205,6 +234,14 @@ async def nodo_man_in_the_middle():
 
             await nodo_d_concentracion_NaOH.write_value(concentracion_actual * (1 + alter * ruido()))
             await nodo_d_cantidad_NaOH.write_value(cantidad_actual * (1 + alter * ruido()))
+
+            # Reenvio de firmas sin modificar: si 'alter' cambio los valores, la
+            # firma dejara de cuadrar en la salmuera y el ataque quedara al descubierto.
+            await nodo_firma_tubo_H2.write_value(await var_firma_tubo_h2.read_value())
+            await nodo_firma_tubo_Cl2.write_value(await var_firma_tubo_cl2.read_value())
+            await nodo_firma_deposito_H2.write_value(await var_firma_deposito_h2.read_value())
+            await nodo_firma_deposito_Cl2.write_value(await var_firma_deposito_cl2.read_value())
+            await nodo_firma_deposito_NaOH.write_value(await var_firma_deposito_naoh.read_value())
 
             await asyncio.sleep(2) # Enviar datos cada 2 segundos
 

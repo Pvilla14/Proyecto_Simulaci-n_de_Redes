@@ -1,6 +1,7 @@
 import asyncio
 import random
 from asyncua import Client
+from firma import firmar
 
 async def nodo_deposito_NaOH():
 
@@ -25,6 +26,9 @@ async def nodo_deposito_NaOH():
         nodo_estado = await cliente.nodes.root.get_child(
             ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Estado"]
         )
+        nodo_firma = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Firma"]
+        )
 
         estado = "NORMAL"
         handler = ProtocoloHandler(estado_actual=estado)
@@ -48,6 +52,9 @@ async def nodo_deposito_NaOH():
             #enviar valores al server de salmuera
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_cantidad_NaOH.write_value(cantidad_actual_NaOH)
+
+            #firmar los valores enviados para que la salmuera detecte manipulacion
+            await nodo_firma.write_value(firmar([concentracion_actual, cantidad_actual_NaOH]))
 
             print(f"Deposito NaOH [{estado_actual}] ->  -> Cantidad de NaOH: {cantidad_actual_NaOH:.2f} | Concentración: {concentracion_actual:.2f}")
              

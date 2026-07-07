@@ -1,6 +1,7 @@
 import asyncio
 import random
 from asyncua import Client
+from firma import firmar
 
 async def nodo_deposito_H2():
 
@@ -24,6 +25,9 @@ async def nodo_deposito_H2():
         )
         nodo_estado = await cliente.nodes.root.get_child(
             ["0:Objects", f"{ns_local}:Deposito_H2", f"{ns_local}:Estado"]
+        )
+        nodo_firma = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Deposito_H2", f"{ns_local}:Firma"]
         )
 
         estado = "NORMAL"
@@ -50,6 +54,9 @@ async def nodo_deposito_H2():
             #enviar valores al server de salmuera
             await nodo_presion.write_value(presion_actual)
             await nodo_cantidad_H2.write_value(cantidad_actual_H2)
+
+            #firmar los valores enviados para que la salmuera detecte manipulacion
+            await nodo_firma.write_value(firmar([presion_actual, cantidad_actual_H2]))
 
             print(f"Deposito H2 -> Presión: {presion_actual:.2f} | Cantidad de H2: {cantidad_actual_H2:.2f}")
              
