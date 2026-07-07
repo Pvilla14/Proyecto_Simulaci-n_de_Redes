@@ -10,6 +10,7 @@ services:
         container_name: sever
         ports:
             - "4840:4840"
+            - "8000:8000"
 
     electrolisis_salmuera_real:
         build:
