@@ -1,7 +1,6 @@
 import asyncio
 import json
 from asyncua import Client, Server
-from asyncua.crypto.security_policies import SecurityPolicyBasic256Sha256
 
 class EstadoHandler:
     """Recibe el JSON grande de estado desde el central y lo reparte
@@ -37,20 +36,6 @@ async def nodo_electrolisis_de_salmuera():
     servidor_local = Server()
     servidor_local.set_endpoint("opc.tcp://0.0.0.0:4841/Electrolisis_Salmuera/")
     servidor_local.set_server_name("Electrolisis_Salmuera")
-
-    # === CONFIGURACIÓN DE SEGURIDAD PARA EL SERVIDOR ===
-    # Definir dónde se guardarán/buscarán los certificados del servidor
-    await servidor_local.init_certificate_store(
-        cert_path="server_cert.pem", 
-        private_key_path="server_key.pem"
-    )
-    
-    # Establecer las políticas de seguridad permitidas (Cifrado Básico/Seguro)
-    # Reemplaza o complementa las políticas por defecto. 
-    # Usaremos Basic256Sha256 con modo SignAndEncrypt.
-    servidor_local.set_security_policy([SecurityPolicyBasic256Sha256])
-    servidor_local.set_security_IDs(["Username", "Anonymous"]) # O el método que uses
-    # ===================================================
 
     await servidor_local.init()
     ns_local = await servidor_local.register_namespace("http://electrolisis.salmuera.cl/local")

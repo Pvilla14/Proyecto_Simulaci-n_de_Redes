@@ -2,9 +2,6 @@ import asyncio
 import json
 from asyncua import Server, ua
 
-# Importamos la política de seguridad
-from asyncua.crypto.security_policies import SecurityPolicyBasic256Sha256
-
 class ServidorOPC:
     def __init__(self, endpoint="opc.tcp://0.0.0.0:4840/freeopcua/server/"):
         self.server = Server()
@@ -15,20 +12,6 @@ class ServidorOPC:
 
 
     async def iniciar(self):
-# === CONFIGURACIÓN DE SEGURIDAD PARA EL SERVIDOR CENTRAL ===
-        #Inicializar el almacén de certificados del servidor
-        # Esto generará 'central_server_cert.pem' y 'central_server_key.pem' automáticamente si no existen.
-        await self.server.init_certificate_store(
-            cert_path="central_server_cert.pem", 
-            private_key_path="central_server_key.pem"
-        )
-        
-        #Establecer la política de seguridad (Cifrado robusto)
-        self.server.set_security_policy([SecurityPolicyBasic256Sha256])
-        
-        # Definir los métodos de identificación de usuario permitidos
-        self.server.set_security_IDs(["Username", "Anonymous"])
-        # ==========================================================
         await self.server.init()
         self.namespace = await self.server.register_namespace("http://redes.servidor_opcua.cl/procesos")
         
