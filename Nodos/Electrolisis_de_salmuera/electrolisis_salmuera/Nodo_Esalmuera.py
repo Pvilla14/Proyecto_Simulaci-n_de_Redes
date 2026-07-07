@@ -1,6 +1,34 @@
 import asyncio
 import json
 from asyncua import Client, Server
+from firma import verificar
+
+class EstadoHandler:
+    """Recibe el JSON grande de estado desde el central y lo reparte
+    a las variables locales de cada tubo/depósito."""
+
+    def __init__(self, mapa_variables_locales):
+        # nombre del sub-proceso (igual a las keys que usa el controlador) -> variable OPC UA local
+        self.mapa = mapa_variables_locales
+
+    def datachange_notification(self, node, val, data):
+        try:
+            estados = json.loads(val)
+        except json.JSONDecodeError:
+            print(f"Estado inválido recibido: {val}")
+            return
+
+        if "global" in estados:
+            # primer ciclo del controlador: mismo estado para todos
+            valor_global = estados["global"]
+            for var_local in self.mapa.values():
+                asyncio.create_task(var_local.write_value(valor_global))
+            return
+
+        for nombre, var_local in self.mapa.items():
+            if nombre in estados:
+                print(f"Reenviando estado de {nombre}: {estados[nombre]}")
+                asyncio.create_task(var_local.write_value(estados[nombre]))
 
 class EstadoHandler:
     """Recibe el JSON grande de estado desde el central y lo reparte
@@ -48,32 +76,37 @@ async def nodo_electrolisis_de_salmuera():
     var_concentracion_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Impurezas", False)
     var_estado_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_tubo_h2 = await obj_tubo_h2.add_variable(ns_local, "Firma", "")
 
-    
+
     #nodos con sus respectivas variables a medir de el tubo de CL2
     obj_tubo_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Tubo_recolector_CL2")
     var_presion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Presion", 0.0)
     var_concentracion_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Concentracion", 0.0)
     var_impurezas_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Impurezas", False)
     var_estado_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_tubo_cl2 = await obj_tubo_cl2.add_variable(ns_local, "Firma", "")
 
     #nodos con sus respectivas variables a medir de el deposito de H2
     obj_deposito_h2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_H2")
     var_presion_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Cantidad", 0.0)
     var_estado_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Estado", "NORMAL")
-    
+    var_firma_deposito_h2 = await obj_deposito_h2.add_variable(ns_local, "Firma", "")
+
     #nodos con sus respectivas variables a medir de el deposito de CL2
     obj_deposito_cl2 = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_CL2")
     var_presion_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Presion", 0.0)
     var_cantidad_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Cantidad", 0.0)
     var_estado_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_deposito_cl2 = await obj_deposito_cl2.add_variable(ns_local, "Firma", "")
 
     #nodos con sus respectivas variables a medir de el deposito de NaOH
     obj_deposito_naoh = await servidor_local.nodes.objects.add_object(ns_local, "Deposito_NaOH")
     var_presion_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Concentracion", 0.0)
     var_cantidad_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Cantidad", 0.0)
-    var_estado_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Estado", "NORMAL")    
+    var_estado_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Estado", "NORMAL")
+    var_firma_deposito_naoh = await obj_deposito_naoh.add_variable(ns_local, "Firma", "")
 
     #inicialización de variables de tubo de H2
     await var_presion_tubo_h2.set_writable()
@@ -101,7 +134,14 @@ async def nodo_electrolisis_de_salmuera():
     await var_presion_deposito_naoh.set_writable()
     await var_cantidad_deposito_naoh.set_writable()
     await var_estado_deposito_naoh.set_writable()
-    
+
+    #firmas escribibles (las publica el nodo intermedio/sensores)
+    await var_firma_tubo_h2.set_writable()
+    await var_firma_tubo_cl2.set_writable()
+    await var_firma_deposito_h2.set_writable()
+    await var_firma_deposito_cl2.set_writable()
+    await var_firma_deposito_naoh.set_writable()
+
     await servidor_local.start()
     print("Servidor del Proceso Salmuera escuchando en puerto 4841...")
     
@@ -155,47 +195,84 @@ async def nodo_electrolisis_de_salmuera():
         while True:
             # Escribir el jason de datos al servidor
 
+            presion = await var_presion_tubo_h2.read_value()
+            concentracion = await var_concentracion_tubo_h2.read_value()
+            impurezas = await var_impurezas_tubo_h2.read_value()
+            firma = await var_firma_tubo_h2.read_value()
+            firma_ok = verificar(firma, [presion, concentracion, impurezas])
+            if firma and not firma_ok:
+                print("MANIPULADO: la firma del Tubo H2 no cuadra, datos alterados en transito")
             datos_tubo_h2 = {
-                "presion": await var_presion_tubo_h2.read_value(),  # leer presión
-                "concentracion": await var_concentracion_tubo_h2.read_value(),  # leer concentración
-                "impurezas": await var_impurezas_tubo_h2.read_value()  # leer impurezas
+                "presion": presion,  # leer presión
+                "concentracion": concentracion,  # leer concentración
+                "impurezas": impurezas,  # leer impurezas
+                "firma_valida": firma_ok
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_tubo_h2 = json.dumps(datos_tubo_h2)
             print(f"Publicando datos de Tubo H2 al servidor central: {json_datos_tubo_h2}")
             await server_tubo_h2_salmuera.write_value(json_datos_tubo_h2)
 
+            presion = await var_presion_tubo_cl2.read_value()
+            concentracion = await var_concentracion_tubo_cl2.read_value()
+            impurezas = await var_impurezas_tubo_cl2.read_value()
+            firma = await var_firma_tubo_cl2.read_value()
+            firma_ok = verificar(firma, [presion, concentracion, impurezas])
+            if firma and not firma_ok:
+                print("MANIPULADO: la firma del Tubo CL2 no cuadra, datos alterados en transito")
             datos_tubo_cl2 = {
-                "presion": await var_presion_tubo_cl2.read_value(),  # leer presión
-                "concentracion": await var_concentracion_tubo_cl2.read_value(),  # leer concentración
-                "impurezas": await var_impurezas_tubo_cl2.read_value()  # leer impurezas
+                "presion": presion,  # leer presión
+                "concentracion": concentracion,  # leer concentración
+                "impurezas": impurezas,  # leer impurezas
+                "firma_valida": firma_ok
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_tubo_cl2 = json.dumps(datos_tubo_cl2)
             print(f"Publicando datos de Tubo CL2 al servidor central: {json_datos_tubo_cl2}")
             await server_tubo_cl2_salmuera.write_value(json_datos_tubo_cl2)
 
+            presion = await var_presion_deposito_h2.read_value()
+            cantidad = await var_cantidad_deposito_h2.read_value()
+            firma = await var_firma_deposito_h2.read_value()
+            firma_ok = verificar(firma, [presion, cantidad])
+            if firma and not firma_ok:
+                print("MANIPULADO: la firma del Deposito H2 no cuadra, datos alterados en transito")
             datos_deposito_h2 = {
-                "presion": await var_presion_deposito_h2.read_value(),  # leer presión
-                "cantidad": await var_cantidad_deposito_h2.read_value(),  # leer cantidad
+                "presion": presion,  # leer presión
+                "cantidad": cantidad,  # leer cantidad
+                "firma_valida": firma_ok
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_deposito_h2 = json.dumps(datos_deposito_h2)
             print(f"Publicando datos de Deposito H2 al servidor central: {json_datos_deposito_h2}")
             await server_deposito_h2_salmuera.write_value(json_datos_deposito_h2)
 
+            presion = await var_presion_deposito_cl2.read_value()
+            cantidad = await var_cantidad_deposito_cl2.read_value()
+            firma = await var_firma_deposito_cl2.read_value()
+            firma_ok = verificar(firma, [presion, cantidad])
+            if firma and not firma_ok:
+                print("MANIPULADO: la firma del Deposito CL2 no cuadra, datos alterados en transito")
             datos_deposito_cl2 = {
-                "presion": await var_presion_deposito_cl2.read_value(),  # leer presión
-                "cantidad": await var_cantidad_deposito_cl2.read_value(),  # leer cantidad
+                "presion": presion,  # leer presión
+                "cantidad": cantidad,  # leer cantidad
+                "firma_valida": firma_ok
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_deposito_cl2 = json.dumps(datos_deposito_cl2)
             print(f"Publicando datos de Deposito CL2 al servidor central: {json_datos_deposito_cl2}")
             await server_deposito_cl2_salmuera.write_value(json_datos_deposito_cl2)
 
+            concentracion = await var_presion_deposito_naoh.read_value()  # esta variable guarda la concentracion
+            cantidad = await var_cantidad_deposito_naoh.read_value()
+            firma = await var_firma_deposito_naoh.read_value()
+            firma_ok = verificar(firma, [concentracion, cantidad])
+            if firma and not firma_ok:
+                print("MANIPULADO: la firma del Deposito NaOH no cuadra, datos alterados en transito")
             datos_deposito_naoh = {
-                "presion": await var_presion_deposito_naoh.read_value(),  # leer presión
-                "cantidad": await var_cantidad_deposito_naoh.read_value(),  # leer cantidad
+                "presion": concentracion,  # leer presión
+                "cantidad": cantidad,  # leer cantidad
+                "firma_valida": firma_ok
             }
             #trasformamos datos a json y los enviamos al servidor central
             json_datos_deposito_naoh = json.dumps(datos_deposito_naoh)

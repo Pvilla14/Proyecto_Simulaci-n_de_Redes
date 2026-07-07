@@ -1,3 +1,7 @@
+# Clave secreta compartida para la firma HMAC (integridad anti-MITM).
+# Debe ser identica en todos los sensores y en la salmuera. El MITM NO la tiene.
+x-firma-key: &firma_key "cambia-esta-clave-por-una-secreta-y-larga-2024"
+
 services:
 
     server:
@@ -8,54 +12,91 @@ services:
             - "4840:4840"
             - "8000:8000"
 
-    electrolisis_salmuera:
+    electrolisis_salmuera_real:
         build:
             context: ./electrolisis_salmuera
-        container_name: e_salmuera
+        container_name: e_salmuera_real
         ports: 
             - "4841:4841"
-        depends_on: 
+        environment:
+            PYTHONUNBUFFERED: "1"
+            FIRMA_KEY: *firma_key
+        depends_on:
             server:
                 condition: service_healthy
+
+    electrolisis_salmuera_falso:
+        build:
+            context: ./man_in_the_middle
+        container_name: e_salmuera_falso
+        ports: 
+            - "4842:4841"
+        environment:
+            - PYTHONUNBUFFERED=1
+        depends_on: 
+            electrolisis_salmuera_real:
+                condition: service_healthy
+
+    ruido_on:
+        build:
+            context: ./man_in_the_middle/ruido
+        profiles: ["tools"]
+        command: ["true"]
+    
+    ruido_off:
+        build:
+            context: ./man_in_the_middle/ruido
+        profiles: ["tools"]
+        command: ["false"]
 
     deposito_cl2:
         build:
             context: ./deposito_cl2
         container_name: deposito_cl2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     deposito_naoh:
         build:
             context: ./deposito_naoh
         container_name: deposito_naoh
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     deposito_h2:
         build:
             context: ./deposito_h2
         container_name: deposito_h2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     tubo_cl2:
         build:
             context: ./tubo_cl2
         container_name: t_cl2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
     tubo_h2:
         build:
             context: ./tubo_h2
         container_name: t_h2
+        environment:
+            FIRMA_KEY: *firma_key
         depends_on:
-            electrolisis_salmuera:
+            electrolisis_salmuera_falso:
                 condition: service_healthy
 
 

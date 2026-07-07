@@ -1,6 +1,7 @@
 import asyncio
 import random
 from asyncua import Client
+from firma import firmar
 
 class ProtocoloHandler:
     def __init__(self, estado_actual):
@@ -12,7 +13,7 @@ class ProtocoloHandler:
 
 async def nodo_deposito_CL2():
 
-    url_nodo_salmuera = "opc.tcp://e_salmuera:4841/Electrolisis_Salmuera/server/"
+    url_nodo_salmuera = "opc.tcp://e_salmuera_falso:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
     #conectar con servidor de salmuera
@@ -32,6 +33,9 @@ async def nodo_deposito_CL2():
         )
         nodo_estado = await cliente.nodes.root.get_child(
             ["0:Objects", f"{ns_local}:Deposito_CL2", f"{ns_local}:Estado"]
+        )
+        nodo_firma = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Deposito_CL2", f"{ns_local}:Firma"]
         )
 
         estado = "NORMAL"
@@ -57,6 +61,9 @@ async def nodo_deposito_CL2():
             #enviar valores al server de salmuera
             await nodo_presion.write_value(presion_actual)
             await nodo_cantidad_CL2.write_value(cantidad_actual_CL2)
+
+            #firmar los valores enviados para que la salmuera detecte manipulacion
+            await nodo_firma.write_value(firmar([presion_actual, cantidad_actual_CL2]))
 
             print(f"Deposito CL2 -> Presión: {presion_actual:.2f} | Cantidad de CL2: {cantidad_actual_CL2:.2f}")
              

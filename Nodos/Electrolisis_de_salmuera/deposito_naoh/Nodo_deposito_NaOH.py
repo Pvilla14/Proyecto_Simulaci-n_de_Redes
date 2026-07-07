@@ -1,20 +1,19 @@
 import asyncio
 import random
 from asyncua import Client
-
-
+from firma import firmar
 
 class ProtocoloHandler:
     def __init__(self, estado_actual):
         self.estado_actual = estado_actual
 
     def datachange_notification(self, node, val, data):
-        print(f"Tubo CL2 recibió estado: {val}")
+        print(f"Deposito NaOH recibió estado: {val}")
         self.estado_actual = val
 
 async def nodo_deposito_NaOH():
 
-    url_nodo_salmuera = "opc.tcp://e_salmuera:4841/Electrolisis_Salmuera/server/"
+    url_nodo_salmuera = "opc.tcp://e_salmuera_falso:4841/Electrolisis_Salmuera/server/"
     cliente = Client(url=url_nodo_salmuera)
 
     #conectar con servidor de salmuera
@@ -34,6 +33,9 @@ async def nodo_deposito_NaOH():
         )
         nodo_estado = await cliente.nodes.root.get_child(
             ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Estado"]
+        )
+        nodo_firma = await cliente.nodes.root.get_child(
+            ["0:Objects", f"{ns_local}:Deposito_NaOH", f"{ns_local}:Firma"]
         )
 
         estado = "NORMAL"
@@ -58,6 +60,9 @@ async def nodo_deposito_NaOH():
             #enviar valores al server de salmuera
             await nodo_concentracion.write_value(concentracion_actual)
             await nodo_cantidad_NaOH.write_value(cantidad_actual_NaOH)
+
+            #firmar los valores enviados para que la salmuera detecte manipulacion
+            await nodo_firma.write_value(firmar([concentracion_actual, cantidad_actual_NaOH]))
 
             print(f"Deposito NaOH [{estado_actual}] ->  -> Cantidad de NaOH: {cantidad_actual_NaOH:.2f} | Concentración: {concentracion_actual:.2f}")
              
