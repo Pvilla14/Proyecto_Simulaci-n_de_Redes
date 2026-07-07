@@ -1,4 +1,3 @@
-import json
 
 class Controlador:
     def __init__(self):

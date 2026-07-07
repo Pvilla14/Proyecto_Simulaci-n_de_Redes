@@ -1,2 +1,6 @@
 asyncio
 asyncua
+fastapi
+uvicorn[standard]
+websockets
+ 

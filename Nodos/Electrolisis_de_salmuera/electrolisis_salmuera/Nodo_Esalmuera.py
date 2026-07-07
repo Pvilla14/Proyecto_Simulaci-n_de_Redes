@@ -30,6 +30,33 @@ class EstadoHandler:
                 print(f"Reenviando estado de {nombre}: {estados[nombre]}")
                 asyncio.create_task(var_local.write_value(estados[nombre]))
 
+class EstadoHandler:
+    """Recibe el JSON grande de estado desde el central y lo reparte
+    a las variables locales de cada tubo/depósito."""
+
+    def __init__(self, mapa_variables_locales):
+        # nombre del sub-proceso (igual a las keys que usa el controlador) -> variable OPC UA local
+        self.mapa = mapa_variables_locales
+
+    def datachange_notification(self, node, val, data):
+        try:
+            estados = json.loads(val)
+        except json.JSONDecodeError:
+            print(f"Estado inválido recibido: {val}")
+            return
+
+        if "global" in estados:
+            # primer ciclo del controlador: mismo estado para todos
+            valor_global = estados["global"]
+            for var_local in self.mapa.values():
+                asyncio.create_task(var_local.write_value(valor_global))
+            return
+
+        for nombre, var_local in self.mapa.items():
+            if nombre in estados:
+                print(f"Reenviando estado de {nombre}: {estados[nombre]}")
+                asyncio.create_task(var_local.write_value(estados[nombre]))
+
 async def nodo_electrolisis_de_salmuera():
     # 1. Definir la dirección de tu servidor
 

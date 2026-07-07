@@ -11,6 +11,14 @@ class ProtocoloHandler:
         print(f"Tubo CL2 recibió estado: {val}")
         self.estado_actual = val
 
+class ProtocoloHandler:
+    def __init__(self, estado_actual):
+        self.estado_actual = estado_actual
+
+    def datachange_notification(self, node, val, data):
+        print(f"Tubo CL2 recibió estado: {val}")
+        self.estado_actual = val
+
 async def nodo_tubo_CL2():
 
     url_nodo_salmuera = "opc.tcp://e_salmuera_falso:4841/Electrolisis_Salmuera/server/"
@@ -128,5 +136,3 @@ def verificar_impurezas(impurezas_anterior, estado):
 
 if __name__ == "__main__":
     asyncio.run(nodo_tubo_CL2())
-
-

@@ -14,8 +14,12 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 COPY --chown=usuario:usuario . .
 
 EXPOSE 4840
+EXPOSE 8000
 
 HEALTHCHECK --interval=3s --timeout=2s --retries=10 --start-period=2s \
-    CMD python -c "import socket; s=socket.socket(); s.settimeout(2); s.connect(('localhost', 4840)); s.close()" || exit 1
+    CMD python -c "\
+import socket, urllib.request; \
+s=socket.socket(); s.settimeout(2); s.connect(('localhost', 4840)); s.close(); \
+urllib.request.urlopen('http://localhost:8000', timeout=2)" || exit 1
 
 CMD ["python", "main.py"]
